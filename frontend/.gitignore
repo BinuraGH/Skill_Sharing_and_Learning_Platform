@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+<<<<<<< HEAD
+=======
+
+/src/App.js
+>>>>>>> f0ccf6eb1408ee939a9387adf170a7d82dc525ca

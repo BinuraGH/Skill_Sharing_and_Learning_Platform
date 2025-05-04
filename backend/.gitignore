@@ -31,6 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
 
 ### Node ###
 node_modules/
@@ -46,3 +47,6 @@ pnpm-debug.log*
 # Build output
 dist/
 build/
+=======
+pom.xml
+>>>>>>> f0ccf6eb1408ee939a9387adf170a7d82dc525ca
