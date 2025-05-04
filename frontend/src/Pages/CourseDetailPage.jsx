@@ -46,6 +46,7 @@ const CourseDetailPage = () => {
     status,
     topics,
     thumbnailUrl,
+
   } = plan;
 
   return (
