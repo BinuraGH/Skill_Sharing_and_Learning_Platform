@@ -31,21 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### Node ###
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# dotenv environment files
-.env
-.env.*.local
-
-# Build output
-dist/
-build/
-
-## Maven
 pom.xml
