@@ -25,6 +25,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/comments/**").permitAll()
+                .requestMatchers("/api/plans/**").permitAll()
+                .requestMatchers("/api/progressupdates/**").permitAll()
+                .requestMatchers("/api/skill-sharing/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
