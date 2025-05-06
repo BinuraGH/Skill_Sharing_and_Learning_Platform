@@ -37,7 +37,7 @@ const CourseDetailPage = () => {
     return (
       <>
         <Navbar />
-        <div className="p-8 text-gray-600">Loading course details...</div>
+        <div className="p-8 text-gray-600 text-center text-lg">Loading course details...</div>
       </>
     );
   }
@@ -55,58 +55,62 @@ const CourseDetailPage = () => {
   return (
     <>
       <Navbar />
+      <div className="p-6 md:p-10 max-w-4xl mx-auto">
+        {/* Thumbnail */}
+        <div className="mb-6">
+          <img
+            src={thumbnailUrl || "https://via.placeholder.com/800x300.png?text=Course+Thumbnail"}
+            alt={title}
+            className="w-full h-64 object-cover rounded-lg shadow"
+          />
+        </div>
 
-      <div className="p-8 max-w-4xl mx-auto">
-        <img
-          src={thumbnailUrl || "https://via.placeholder.com/800x300.png?text=Course+Thumbnail"}
-          alt={title}
-          className="w-full h-64 object-cover rounded mb-4"
-        />
-
-        <h1 className="text-3xl font-bold">{title}</h1>
-        <p className="text-gray-500 mb-2">
-          {isPaid ? `$${price}` : "Free"} · {status}
+        {/* Title + Info */}
+        <h1 className="text-3xl font-bold text-gray-800 mb-1">{title}</h1>
+        <p className="text-sm text-gray-500 mb-4">
+          <span className="font-semibold">{isPaid ? `$${price}` : "Free"}</span> · {status}
         </p>
-        <p className="mb-4 text-gray-700">{courseDescription || "No course description provided."}</p>
+        <p className="text-gray-700 mb-4">{courseDescription || "No course description provided."}</p>
 
         {/* Progress Bar */}
-        <div className="bg-gray-200 h-3 rounded-full mb-2">
+        <div className="relative w-full h-3 bg-gray-300 rounded-full overflow-hidden mb-2">
           <div
-            className="bg-green-500 h-3 rounded-full"
+            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
             style={{ width: `${progress}%` }}
-          ></div>
+          />
         </div>
-        <p className="text-sm text-right text-gray-500 mb-6">{progress}% completed</p>
+        <p className="text-xs text-gray-600 text-right mb-6">{progress}% completed</p>
 
-        <h2 className="text-xl font-semibold mb-3">Course Content</h2>
+        {/* Course Content */}
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Course Content</h2>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {topics.map((topic, index) => (
-            <div key={index} className="border rounded p-4 bg-white shadow">
-              <h3 className="text-lg font-medium">{topic.title || "Untitled Topic"}</h3>
-              <p className="text-sm text-gray-600">
+            <div key={index} className="border rounded-lg bg-white p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">{topic.title || "Untitled Topic"}</h3>
+              <p className="text-sm text-gray-600 mb-3">
                 {topic.description || "No description available for this topic."}
               </p>
 
               {topic.videoUrl ? (
-                <iframe
-                  width="100%"
-                  height="250"
-                  src={topic.videoUrl}
-                  title={topic.title}
-                  className="my-3"
-                  allowFullScreen
-                ></iframe>
+                <div className="mb-3">
+                  <iframe
+                    className="w-full h-56 rounded"
+                    src={topic.videoUrl}
+                    title={topic.title}
+                    allowFullScreen
+                  />
+                </div>
               ) : (
-                <p className="text-sm italic text-gray-400 my-2">No video available.</p>
+                <p className="text-sm italic text-gray-400 mb-3">No video available.</p>
               )}
 
               <button
                 onClick={() => handleMarkComplete(index)}
-                className={`px-4 py-2 text-white mt-2 rounded transition-all duration-200 ${
+                className={`px-4 py-2 text-sm font-semibold rounded shadow-sm transition-all duration-200 ${
                   topic.completed
-                    ? 'bg-green-500 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600'
+                    ? 'bg-green-500 text-white cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
                 disabled={topic.completed}
               >

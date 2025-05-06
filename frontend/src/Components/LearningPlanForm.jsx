@@ -19,6 +19,16 @@ const LearningPlanForm = ({
     setFormData({ ...formData, topics: updatedTopics });
   };
 
+  const addTopic = () => {
+    setFormData({
+      ...formData,
+      topics: [
+        ...formData.topics,
+        { title: '', description: '', completed: false, videoUrl: '' },
+      ],
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div className="bg-white w-full max-w-2xl p-6 rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto border">
@@ -40,7 +50,7 @@ const LearningPlanForm = ({
           }}
           className="space-y-5"
         >
-          {/* User ID + Load Plans */}
+          {/* User ID + Load Button */}
           <div className="flex gap-3 items-center">
             <input
               name="userId"
@@ -59,7 +69,7 @@ const LearningPlanForm = ({
             </button>
           </div>
 
-          {/* Basic Info */}
+          {/* Plan Fields */}
           <input
             name="title"
             value={formData.title}
@@ -95,74 +105,102 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          {/* Topics Section */}
-          <div>
-            <h4 className="text-lg font-semibold mb-2">Topics</h4>
-            <div className="space-y-4">
-              {formData.topics.map((topic, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded border space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Topic Title"
-                    value={topic.title}
-                    onChange={(e) => updateTopic(index, 'title', e.target.value)}
-                    className="w-full border p-2 rounded-md"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={topic.description}
-                    onChange={(e) => updateTopic(index, 'description', e.target.value)}
-                    className="w-full border p-2 rounded-md"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Video URL"
-                    value={topic.videoUrl}
-                    onChange={(e) => updateTopic(index, 'videoUrl', e.target.value)}
-                    className="w-full border p-2 rounded-md"
-                  />
-                  <button
-                    type="button"
-                    className="text-red-600 hover:text-red-800 text-sm"
-                    onClick={() => removeTopic(index)}
-                    disabled={formData.topics.length === 1}
-                  >
-                    🗑 Remove Topic
-                  </button>
-                </div>
-              ))}
-            </div>
+          {/* Paid Course Toggle */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isPaid"
+              checked={formData.isPaid}
+              onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
+            />
+            <label htmlFor="isPaid" className="text-sm font-medium text-gray-700">
+              Paid Course
+            </label>
           </div>
 
-          {/* Add Topic Button */}
-          <button
-            type="button"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
-            onClick={() =>
-              setFormData({
-                ...formData,
-                topics: [...formData.topics, { title: '', description: '', completed: false, videoUrl: '' }],
-              })
-            }
-          >
-            ➕ Add Topic
-          </button>
+          {/* Price Field */}
+          {formData.isPaid && (
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              placeholder="Price (LKR)"
+              className="w-full border p-2 rounded-md"
+              min="0"
+              required
+            />
+          )}
+
+          {/* Topics */}
+          <div>
+            <h4 className="font-semibold mb-2">Topics</h4>
+            {formData.topics.map((topic, index) => (
+              <div
+                key={index}
+                className="border border-gray-300 rounded-md p-3 mb-4 space-y-2"
+              >
+                <input
+                  type="text"
+                  placeholder="Topic Title"
+                  value={topic.title}
+                  onChange={(e) => updateTopic(index, 'title', e.target.value)}
+                  className="w-full border p-2 rounded-md"
+                  required
+                />
+                <textarea
+                  placeholder="Topic Description"
+                  value={topic.description}
+                  onChange={(e) => updateTopic(index, 'description', e.target.value)}
+                  className="w-full border p-2 rounded-md"
+                />
+                <input
+                  type="text"
+                  placeholder="Video URL"
+                  value={topic.videoUrl}
+                  onChange={(e) => updateTopic(index, 'videoUrl', e.target.value)}
+                  className="w-full border p-2 rounded-md"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={topic.completed}
+                    onChange={(e) => updateTopic(index, 'completed', e.target.checked)}
+                  />
+                  <span className="text-sm">Completed</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeTopic(index)}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Remove Topic
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addTopic}
+              className="text-sm text-purple-600 hover:underline"
+            >
+              + Add Topic
+            </button>
+          </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
             >
-              {isEditing ? 'Update' : 'Create'}
+              {isEditing ? 'Update Plan' : 'Create Plan'}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md"
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
             >
-              ❌ Cancel
+              Cancel
             </button>
           </div>
         </form>

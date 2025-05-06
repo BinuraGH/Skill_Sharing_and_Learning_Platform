@@ -239,8 +239,6 @@
 //     </>
 //   );
 // };
-
-// export default MyLearningPlans;
 import React, { useState } from 'react';
 import Navbar from '../Components/Navbar';
 import PlanCard from '../Components/PlanCard';
@@ -260,6 +258,7 @@ const ManagePlans = () => {
     status: 'In Progress',
     thumbnailUrl: '',
     courseDescription: '',
+    updatedPlanId: '',
     topics: [
       {
         title: '',
@@ -273,11 +272,10 @@ const ManagePlans = () => {
   const fetchPlans = async (userId) => {
     try {
       const response = await fetch(`http://localhost:8080/api/plans/user/${userId}`);
-      if (!response.ok) throw new Error('Failed to fetch plans');
       const data = await response.json();
       setPlans(data);
     } catch (error) {
-      console.error('Error fetching plans:', error);
+      console.error('❌ Error fetching plans:', error);
     }
   };
 
@@ -289,14 +287,11 @@ const ManagePlans = () => {
         body: JSON.stringify(newPlanData),
       });
 
-      if (!response.ok) throw new Error('Failed to create the plan');
       const savedPlan = await response.json();
       setPlans((prev) => [savedPlan, ...prev]);
-      alert('Plan created successfully!');
       setShowForm(false);
     } catch (error) {
-      console.error('Error creating plan:', error);
-      alert('Failed to create plan. Please try again.');
+      alert('❌ Failed to create plan.');
     }
   };
 
@@ -308,73 +303,69 @@ const ManagePlans = () => {
 
   const handleUpdatePlan = async (updatedPlanData) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/plans/${formData.updatedPlanId}`, {
+      const id = updatedPlanData.updatedPlanId;
+      const response = await fetch(`http://localhost:8080/api/plans/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedPlanData),
       });
 
-      if (!response.ok) throw new Error('Failed to update plan');
-
-      const updatedPlan = await response.json();
-      setPlans((prevPlans) =>
-        prevPlans.map((plan) => (plan._id === updatedPlan._id ? updatedPlan : plan))
-      );
-      alert('Plan updated successfully!');
+      const updated = await response.json();
+      setPlans((prev) => prev.map((p) => (p._id === id ? updated : p)));
       setShowForm(false);
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating plan:', error);
-      alert('Failed to update plan. Please try again.');
+      alert('❌ Failed to update plan.');
     }
   };
 
   const handleDeletePlan = async (planId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this plan?");
-    if (!confirmDelete) return;
-
+    if (!window.confirm("Are you sure you want to delete this plan?")) return;
     try {
-      const response = await fetch(`http://localhost:8080/api/plans/${planId}`, {
-        method: "DELETE",
-        credentials: "include",
+      const res = await fetch(`http://localhost:8080/api/plans/${planId}`, {
+        method: 'DELETE',
+        credentials: 'include',
       });
-
-      if (response.ok) {
-        alert("Plan deleted successfully.");
-        setPlans((prev) => prev.filter((p) => p.id !== planId));
+      if (res.ok) {
+        setPlans((prev) => prev.filter((p) => p._id !== planId));
       } else {
-        alert("Failed to delete the plan.");
+        alert('❌ Failed to delete.');
       }
-    } catch (error) {
-      console.error("Delete error:", error);
-      alert("An error occurred while deleting the plan.");
+    } catch (err) {
+      alert('❌ Delete error.');
     }
   };
-
 
   return (
     <>
       <Navbar />
-      <div className="manage-learning">
-        <h2 className="page-title">Manage Your Learning</h2>
+      <div className="bg-gradient-to-br from-white to-gray-100 min-h-screen p-10">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Manage Your Learning</h2>
 
-        <div className="tab-switcher-wrapper">
-          <div className="tab-switcher-box">
-            <button className={activeTab === 'plans' ? 'active-tab-btn' : 'tab-btn'} onClick={() => setActiveTab('plans')}>
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-white rounded-lg shadow p-1">
+            <button
+              className={`px-4 py-2 rounded-l-md font-medium ${activeTab === 'plans' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600'}`}
+              onClick={() => setActiveTab('plans')}
+            >
               Learning Plans
             </button>
-            <button className={activeTab === 'progress' ? 'active-tab-btn' : 'tab-btn'} onClick={() => setActiveTab('progress')}>
+            <button
+              className={`px-4 py-2 rounded-r-md font-medium ${activeTab === 'progress' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600'}`}
+              onClick={() => setActiveTab('progress')}
+            >
               Progress Updates
             </button>
           </div>
         </div>
 
-        <div className="plans-info">
-          <div className="plans-info-header">
-            <button className="new-plan-btn" onClick={() => setShowForm((prev) => !prev)}>
-              📌 New Plan
-            </button>
-          </div>
+        <div className="flex justify-start mb-4">
+          <button
+            className="bg-purple-600 text-white px-5 py-2 rounded-md shadow hover:bg-purple-700 transition"
+            onClick={() => setShowForm(true)}
+          >
+            📌 New Plan
+          </button>
         </div>
 
         {showForm && (
@@ -386,15 +377,21 @@ const ManagePlans = () => {
             onCancel={() => {
               setShowForm(false);
               setIsEditing(false);
+              setFormData((prev) => ({ ...prev, updatedPlanId: '' }));
             }}
             onLoadPlans={fetchPlans}
           />
         )}
 
-        <h3>My Learning Plans</h3>
-        <div className="flex flex-wrap gap-6 mt-6">
+        <h3 className="text-xl font-semibold text-gray-700 mt-6 mb-4">My Learning Plans</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
           {plans.map((plan) => (
-            <PlanCard key={plan._id} plan={plan} onEdit={() => handleEditPlan(plan)} onDelete={() => handleDeletePlan(plan._id)} />
+            <PlanCard
+              key={plan._id}
+              plan={plan}
+              onEdit={() => handleEditPlan(plan)}
+              onDelete={() => handleDeletePlan(plan._id)}
+            />
           ))}
         </div>
       </div>
