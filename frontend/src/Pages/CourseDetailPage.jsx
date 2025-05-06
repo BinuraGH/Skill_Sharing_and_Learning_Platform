@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import '../styles/CourseDetailPage.css';
-
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import "../styles/CourseDetailPage.css";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
