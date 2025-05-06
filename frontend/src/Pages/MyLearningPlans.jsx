@@ -330,21 +330,27 @@ const ManagePlans = () => {
   };
 
   const handleDeletePlan = async (planId) => {
-    if (window.confirm('Are you sure you want to delete this plan?')) {
-      try {
-        const response = await fetch(`http://localhost:8080/api/plans/${planId}`, {
-          method: 'DELETE',
-        });
+    const confirmDelete = window.confirm("Are you sure you want to delete this plan?");
+    if (!confirmDelete) return;
 
-        if (!response.ok) throw new Error('Failed to delete the plan');
-        setPlans((prevPlans) => prevPlans.filter((plan) => plan._id !== planId));
-        alert('Plan deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting plan:', error);
-        alert('Failed to delete plan.');
+    try {
+      const response = await fetch(`http://localhost:8080/api/plans/${planId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        alert("Plan deleted successfully.");
+        setPlans((prev) => prev.filter((p) => p.id !== planId));
+      } else {
+        alert("Failed to delete the plan.");
       }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("An error occurred while deleting the plan.");
     }
   };
+
 
   return (
     <>
@@ -386,14 +392,9 @@ const ManagePlans = () => {
         )}
 
         <h3>My Learning Plans</h3>
-        <div className="plan-card-wrapper">
+        <div className="flex flex-wrap gap-6 mt-6">
           {plans.map((plan) => (
-            <PlanCard
-              key={plan._id}
-              plan={plan}
-              onDelete={() => handleDeletePlan(plan._id)}
-              onEdit={() => handleEditPlan(plan)}
-            />
+            <PlanCard key={plan._id} plan={plan} onEdit={() => handleEditPlan(plan)} onDelete={() => handleDeletePlan(plan._id)} />
           ))}
         </div>
       </div>

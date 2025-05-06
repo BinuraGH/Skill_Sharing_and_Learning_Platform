@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import "../styles/CourseDetailPage.css";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
@@ -70,6 +69,7 @@ const CourseDetailPage = () => {
         </p>
         <p className="mb-4 text-gray-700">{courseDescription || "No course description provided."}</p>
 
+        {/* Progress Bar */}
         <div className="bg-gray-200 h-3 rounded-full mb-2">
           <div
             className="bg-green-500 h-3 rounded-full"
@@ -103,8 +103,10 @@ const CourseDetailPage = () => {
 
               <button
                 onClick={() => handleMarkComplete(index)}
-                className={`px-4 py-2 text-white mt-2 rounded ${
-                  topic.completed ? 'bg-green-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                className={`px-4 py-2 text-white mt-2 rounded transition-all duration-200 ${
+                  topic.completed
+                    ? 'bg-green-500 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-600'
                 }`}
                 disabled={topic.completed}
               >
