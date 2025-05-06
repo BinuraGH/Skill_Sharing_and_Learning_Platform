@@ -17,6 +17,10 @@ const HomePage = () => {
           <button className="icon-btn">🏠</button>
           <button className="icon-btn">🔔</button>
           <button className="icon-btn">📩</button>
+          <button className="text-xl p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition">
+            test button 📩
+          </button>
+
           <button className="profile-pic">
             <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="My Profile" className="profile-thumb small" />
           </button>
