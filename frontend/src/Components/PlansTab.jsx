@@ -19,7 +19,7 @@ const PlansTab = () => {
         <div className="post-header">
           <img src="https://randomuser.me/api/portraits/men/52.jpg" alt="Cameron Williamson" />
           <div>
-            <p>Cameron Williamsons</p>
+            <p>Cameron Williamson</p>
             <small>Plan Share</small>
           </div>
         </div>
