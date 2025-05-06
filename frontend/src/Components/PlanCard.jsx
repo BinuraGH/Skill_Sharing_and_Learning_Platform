@@ -53,60 +53,63 @@
 //   );
 // };
 
-// export default PlanCard;
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/PlanCard.css";
 
 const PlanCard = ({ plan, onEdit, onDelete }) => {
   const navigate = useNavigate();
-
   if (!plan) return null;
 
-  const {
-    id,
-    title,
-    description,
-    thumbnailUrl,
-    topics = [],
-  } = plan;
+  const { id, title, description, thumbnailUrl, topics = [] } = plan;
 
-  // Prevent card click when Edit/Delete is clicked
+  // Navigate unless clicking Edit/Delete
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
       e.target.closest(".delete-btn")
-    ) {
-      return;
-    }
+    ) return;
     navigate(`/plans/${id}`);
   };
 
   return (
     <div className="learning-plan-card" onClick={handleCardClick}>
       <img
-        src={
-          thumbnailUrl?.trim()
-            ? thumbnailUrl
-            : "https://via.placeholder.com/300x180.png?text=No+Image"
-        }
-        alt={title}
         className="learning-plan-thumbnail"
+        src={thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image"}
+        alt={title || "Course Thumbnail"}
       />
-      <div className="learning-plan-content">
-        <h3 className="learning-plan-title">{title}</h3>
-        <p className="learning-plan-description">{description}</p>
-        <ul className="course-topics">
-          {topics.map((topic, index) => (
-            <li key={index}>{topic.title}</li>
-          ))}
-        </ul>
 
-        <div className="card-actions">
-          <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+      <div className="learning-plan-content">
+        <h3 className="learning-plan-title">{title || "Untitled Course"}</h3>
+        <p className="learning-plan-description">{description || "No description provided."}</p>
+
+        {topics.length > 0 && (
+          <ul className="learning-plan-topics">
+            {topics.slice(0, 3).map((topic, idx) => (
+              <li key={idx}>{topic.title || `Topic ${idx + 1}`}</li>
+            ))}
+          </ul>
+        )}
+
+        <div className="learning-plan-actions">
+          <button
+            className="edit-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
             ✏️ Edit
           </button>
-          <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+
+          <button
+            className="delete-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
             🗑 Delete
           </button>
         </div>
@@ -116,4 +119,3 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
 };
 
 export default PlanCard;
-
