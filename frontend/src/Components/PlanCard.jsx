@@ -55,20 +55,35 @@
 
 // export default PlanCard;
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/PlanCard.css";
 
 const PlanCard = ({ plan, onEdit, onDelete }) => {
+  const navigate = useNavigate();
+
   if (!plan) return null;
 
   const {
+    id,
     title,
     description,
     thumbnailUrl,
     topics = [],
   } = plan;
 
+  // Prevent card click when Edit/Delete is clicked
+  const handleCardClick = (e) => {
+    if (
+      e.target.closest(".edit-btn") ||
+      e.target.closest(".delete-btn")
+    ) {
+      return;
+    }
+    navigate(`/plans/${id}`);
+  };
+
   return (
-    <div className="learning-plan-card">
+    <div className="learning-plan-card" onClick={handleCardClick}>
       <img
         src={
           thumbnailUrl?.trim()
@@ -88,8 +103,12 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
         </ul>
 
         <div className="card-actions">
-          <button className="edit-btn" onClick={onEdit}>✏️ Edit</button>
-          <button className="delete-btn" onClick={onDelete}>🗑 Delete</button>
+          <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+            ✏️ Edit
+          </button>
+          <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+            🗑 Delete
+          </button>
         </div>
       </div>
     </div>
@@ -97,3 +116,4 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
 };
 
 export default PlanCard;
+
