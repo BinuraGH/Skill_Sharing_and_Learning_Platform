@@ -1,0 +1,92 @@
+.learning-plan-card {
+    min-width: 260px;
+    max-width: 260px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .learning-plan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+  
+  .learning-plan-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .learning-plan-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .learning-plan-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #222;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  .learning-plan-description {
+    font-size: 0.87rem;
+    color: #555;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  .course-topics {
+    list-style-type: disc;
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: #444;
+    margin: 0.5rem 0 0;
+  }
+  
+  .card-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    padding-top: 0.5rem;
+  }
+  
+  .card-actions .edit-btn,
+  .card-actions .delete-btn {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .card-actions .edit-btn:hover {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+  }
+  
+  .card-actions .delete-btn:hover {
+    background-color: #fdecea;
+    border-color: #f44336;
+  }
+  
+  .plan-card-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+    justify-content: flex-start;
+  }
+  
