@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import './CourseDetailPage.css';
+import '../styles/CourseDetailPage.css';
 
 
 const CourseDetailPage = () => {
