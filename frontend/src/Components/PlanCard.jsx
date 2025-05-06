@@ -52,10 +52,8 @@
 //     </div>
 //   );
 // };
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/PlanCard.css";
 
 const PlanCard = ({ plan, onEdit, onDelete }) => {
   const navigate = useNavigate();
@@ -63,7 +61,6 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
 
   const { id, title, description, thumbnailUrl, topics = [] } = plan;
 
-  // Navigate unless clicking Edit/Delete
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
@@ -73,28 +70,31 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="learning-plan-card" onClick={handleCardClick}>
+    <div
+      onClick={handleCardClick}
+      className="w-[280px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all border border-gray-200 cursor-pointer flex flex-col justify-between m-4"
+    >
       <img
-        className="learning-plan-thumbnail"
         src={thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image"}
         alt={title || "Course Thumbnail"}
+        className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
       />
 
-      <div className="learning-plan-content">
-        <h3 className="learning-plan-title">{title || "Untitled Course"}</h3>
-        <p className="learning-plan-description">{description || "No description provided."}</p>
+      <div className="p-4 flex flex-col gap-2">
+        <h3 className="text-base font-semibold text-gray-800 truncate">{title || "Untitled Course"}</h3>
+        <p className="text-sm text-gray-600 line-clamp-2">{description || "No description provided."}</p>
 
         {topics.length > 0 && (
-          <ul className="learning-plan-topics">
+          <ul className="list-disc pl-5 text-sm text-gray-700 max-h-16 overflow-hidden space-y-1">
             {topics.slice(0, 3).map((topic, idx) => (
-              <li key={idx}>{topic.title || `Topic ${idx + 1}`}</li>
+              <li key={idx} className="truncate">{topic.title || `Topic ${idx + 1}`}</li>
             ))}
           </ul>
         )}
 
-        <div className="learning-plan-actions">
+        <div className="flex gap-3 pt-3">
           <button
-            className="edit-btn"
+            className="edit-btn inline-flex items-center gap-2 text-blue-700 border border-blue-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-50 transition"
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
@@ -104,7 +104,7 @@ const PlanCard = ({ plan, onEdit, onDelete }) => {
           </button>
 
           <button
-            className="delete-btn"
+            className="delete-btn inline-flex items-center gap-2 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
             onClick={(e) => {
               e.stopPropagation();
               onDelete();

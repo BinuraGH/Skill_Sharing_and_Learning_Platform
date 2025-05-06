@@ -392,14 +392,9 @@ const ManagePlans = () => {
         )}
 
         <h3>My Learning Plans</h3>
-        <div className="plan-card-wrapper">
+        <div className="flex flex-wrap gap-6 mt-6">
           {plans.map((plan) => (
-            <PlanCard
-              key={plan._id}
-              plan={plan}
-              onDelete={() => handleDeletePlan(plan._id)}
-              onEdit={() => handleEditPlan(plan)}
-            />
+            <PlanCard key={plan._id} plan={plan} onEdit={() => handleEditPlan(plan)} onDelete={() => handleDeletePlan(plan._id)} />
           ))}
         </div>
       </div>
