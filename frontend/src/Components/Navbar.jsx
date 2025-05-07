@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Home.css';
 
 
@@ -47,7 +48,7 @@ const Navbar = () => {
             </div>
             <ul className="text-sm">
               <li>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
               </li>
               <li>
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">Edit Profile</a>
