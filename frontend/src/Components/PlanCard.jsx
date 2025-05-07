@@ -100,7 +100,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         {topics.length > 0 && (
           <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 max-h-20 overflow-hidden">
             {topics.slice(0, 3).map((topic, idx) => (
-              <li key={idx} className="truncate">
+              <li key={`${topic.title || 'topic'}-${idx}`} className="truncate">
                 {topic.title || `Topic ${idx + 1}`}
               </li>
             ))}

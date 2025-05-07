@@ -46,7 +46,11 @@ const LearningPlanForm = ({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit(formData);
+            const formWithId = {
+              ...formData,
+              updatedPlanId: formData.updatedPlanId, // 🔥 Ensure it's passed
+            };
+            onSubmit(formWithId);
           }}
           className="space-y-5"
         >

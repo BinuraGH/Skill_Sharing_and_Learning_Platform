@@ -296,7 +296,9 @@ const ManagePlans = () => {
   };
 
   const handleEditPlan = (plan) => {
-    setFormData({ ...plan, updatedPlanId: plan._id });
+    const planId = plan._id || plan.id;
+    console.log("Editing plan ID:", planId);
+    setFormData({ ...plan, updatedPlanId: planId });
     setIsEditing(true);
     setShowForm(true);
   };
@@ -304,20 +306,26 @@ const ManagePlans = () => {
   const handleUpdatePlan = async (updatedPlanData) => {
     try {
       const id = updatedPlanData.updatedPlanId;
+      console.log("🔥 Sending PUT to ID:", id);
+  
       const response = await fetch(`http://localhost:8080/api/plans/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedPlanData),
       });
-
-      const updated = await response.json();
-      setPlans((prev) => prev.map((p) => (p._id === id ? updated : p)));
+  
+      if (!response.ok) throw new Error("Update failed");
+  
+      await response.json(); // discard or log as needed
+  
+      await fetchPlans(updatedPlanData.userId); // ✅ reloads fresh data
       setShowForm(false);
       setIsEditing(false);
     } catch (error) {
       alert('❌ Failed to update plan.');
     }
   };
+  
 
   const handleDeletePlan = async (planId) => {
     if (!window.confirm("Are you sure you want to delete this plan?")) return;
