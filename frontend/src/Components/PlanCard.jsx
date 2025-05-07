@@ -64,13 +64,15 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   const { _id, title, description, thumbnailUrl, topics = [] } = plan;
 
+  const planId = plan._id || plan.id;
+
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
       e.target.closest(".delete-btn") ||
       e.target.closest(".emoji-wrapper")
     ) return;
-    navigate(`/plans/${_id}`);
+    navigate(`/plans/${planId}`);
   };
 
   return (
@@ -118,7 +120,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("🧪 Delete button clicked:", _id); // ✅ confirm ID
+                  console.log("🧪 Delete button clicked:", _id);
                   onDelete(plan);
                 }}
               >
