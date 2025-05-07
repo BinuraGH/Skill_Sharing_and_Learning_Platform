@@ -6,7 +6,6 @@ const LearningPlanForm = ({
   isEditing,
   onSubmit,
   onCancel,
-  onLoadPlans,
 }) => {
   const updateTopic = (index, key, value) => {
     const updatedTopics = [...formData.topics];
@@ -54,24 +53,15 @@ const LearningPlanForm = ({
           }}
           className="space-y-5"
         >
-          {/* User ID + Load Button */}
-          <div className="flex gap-3 items-center">
-            <input
-              name="userId"
-              value={formData.userId}
-              onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-              placeholder="User ID"
-              className="flex-grow border border-gray-300 p-2 rounded-md"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => onLoadPlans(formData.userId)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-            >
-              🔄 Load My Plans
-            </button>
-          </div>
+          <input
+            name="userId"
+            value={formData.userId}
+            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+            placeholder="User ID"
+            className="w-full border border-gray-300 p-2 rounded-md"
+            required
+          />
+
 
           {/* Plan Fields */}
           <input

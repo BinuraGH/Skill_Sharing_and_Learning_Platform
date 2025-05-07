@@ -54,7 +54,7 @@
 // };
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EmojiReactions from "../Components/EmojiReactions"; // adjust path as needed
+import EmojiReactions from "../Components/EmojiReactions";
 
 const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const navigate = useNavigate();
@@ -62,33 +62,28 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   if (!plan) return null;
 
-  const { id, title, description, thumbnailUrl, topics = [] } = plan;
+  const { _id, title, description, thumbnailUrl, topics = [] } = plan;
 
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
       e.target.closest(".delete-btn") ||
       e.target.closest(".emoji-wrapper")
-    ) {
-      return;
-    }
-    navigate(`/plans/${id}`);
+    ) return;
+    navigate(`/plans/${_id}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
       className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
-
     >
-      {/* Thumbnail */}
       <img
         src={thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image"}
         alt={title || "Course Thumbnail"}
         className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
       />
 
-      {/* Content */}
       <div className="p-4 flex flex-col gap-2">
         <h3 className="text-lg font-semibold text-gray-800 truncate">
           {title || "Untitled Course"}
@@ -107,7 +102,6 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
           </ul>
         )}
 
-        {/* Action or Emoji */}
         <div className="pt-4">
           {showActions ? (
             <div className="flex gap-2">
@@ -124,11 +118,13 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete();
+                  console.log("🧪 Delete button clicked:", _id); // ✅ confirm ID
+                  onDelete(plan);
                 }}
               >
                 🗑 Delete
               </button>
+
             </div>
           ) : (
             <div

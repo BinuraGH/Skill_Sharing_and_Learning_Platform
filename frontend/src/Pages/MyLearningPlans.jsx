@@ -239,7 +239,7 @@
 //     </>
 //   );
 // };
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../Components/Navbar';
 import PlanCard from '../Components/PlanCard';
 import LearningPlanForm from '../Components/LearningPlanForm';
@@ -252,7 +252,7 @@ const ManagePlans = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
-    userId: '',
+    userId: '', // ✅ Make sure this is set correctly when creating plans
     title: '',
     description: '',
     status: 'In Progress',
@@ -268,6 +268,13 @@ const ManagePlans = () => {
       },
     ],
   });
+
+  // ✅ Auto-fetch plans on load if needed (optional)
+  useEffect(() => {
+    if (formData.userId) {
+      fetchPlans(formData.userId);
+    }
+  }, [formData.userId]);
 
   const fetchPlans = async (userId) => {
     try {
@@ -297,7 +304,7 @@ const ManagePlans = () => {
 
   const handleEditPlan = (plan) => {
     const planId = plan._id || plan.id;
-    console.log("Editing plan ID:", planId);
+    console.log("✏️ Editing plan ID:", planId);
     setFormData({ ...plan, updatedPlanId: planId });
     setIsEditing(true);
     setShowForm(true);
@@ -307,43 +314,52 @@ const ManagePlans = () => {
     try {
       const id = updatedPlanData.updatedPlanId;
       console.log("🔥 Sending PUT to ID:", id);
-  
+
       const response = await fetch(`http://localhost:8080/api/plans/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedPlanData),
       });
-  
+
       if (!response.ok) throw new Error("Update failed");
-  
-      await response.json(); // discard or log as needed
-  
-      await fetchPlans(updatedPlanData.userId); // ✅ reloads fresh data
+
+      await response.json();
+      await fetchPlans(updatedPlanData.userId);
       setShowForm(false);
       setIsEditing(false);
     } catch (error) {
       alert('❌ Failed to update plan.');
     }
   };
-  
 
-  const handleDeletePlan = async (planId) => {
+  const handleDeletePlan = async (planObj) => {
+    const planId = planObj?._id || planObj?.id;
+    if (!planId) {
+      console.error("❌ Plan ID is undefined:", planObj);
+      return;
+    }
+  
+    console.log("🗑 Deleting plan ID:", planId);
+  
     if (!window.confirm("Are you sure you want to delete this plan?")) return;
+  
     try {
       const res = await fetch(`http://localhost:8080/api/plans/${planId}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
+  
       if (res.ok) {
-        setPlans((prev) => prev.filter((p) => p._id !== planId));
+        await fetchPlans(formData.userId);
       } else {
         alert('❌ Failed to delete.');
       }
     } catch (err) {
       alert('❌ Delete error.');
+      console.error(err);
     }
   };
-
+  
+  
   return (
     <>
       <Navbar />
@@ -387,8 +403,8 @@ const ManagePlans = () => {
               setIsEditing(false);
               setFormData((prev) => ({ ...prev, updatedPlanId: '' }));
             }}
-            onLoadPlans={fetchPlans}
           />
+
         )}
 
         <h3 className="text-xl font-semibold text-gray-700 mt-6 mb-4">My Learning Plans</h3>
@@ -398,7 +414,7 @@ const ManagePlans = () => {
               key={plan._id}
               plan={plan}
               onEdit={() => handleEditPlan(plan)}
-              onDelete={() => handleDeletePlan(plan._id)}
+              onDelete={(planObj) => handleDeletePlan(planObj)} 
             />
           ))}
         </div>
