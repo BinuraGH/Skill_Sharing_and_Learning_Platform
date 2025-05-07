@@ -62,16 +62,23 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   if (!plan) return null;
 
-  const { _id, title, description, thumbnailUrl, topics = [] } = plan;
+  const {
+    _id = plan.id, // fallback if _id is undefined
+    title,
+    description,
+    thumbnailUrl,
+    topics = [],
+  } = plan;
 
-  const planId = plan._id || plan.id;
+  const planId = _id;
 
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
       e.target.closest(".delete-btn") ||
       e.target.closest(".emoji-wrapper")
-    ) return;
+    )
+      return;
     navigate(`/plans/${planId}`);
   };
 
@@ -97,7 +104,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         {topics.length > 0 && (
           <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 max-h-20 overflow-hidden">
             {topics.slice(0, 3).map((topic, idx) => (
-              <li key={`${topic.title || 'topic'}-${idx}`} className="truncate">
+              <li key={`${planId}-topic-${idx}`} className="truncate">
                 {topic.title || `Topic ${idx + 1}`}
               </li>
             ))}
@@ -111,7 +118,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="edit-btn flex-1 text-blue-600 border border-blue-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit();
+                  onEdit(plan); // ✅ pass the current plan
                 }}
               >
                 ✏️ Edit
@@ -120,13 +127,12 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("🧪 Delete button clicked:", _id);
+                  console.log("🧪 Delete button clicked:", planId);
                   onDelete(plan);
                 }}
               >
                 🗑 Delete
               </button>
-
             </div>
           ) : (
             <div
