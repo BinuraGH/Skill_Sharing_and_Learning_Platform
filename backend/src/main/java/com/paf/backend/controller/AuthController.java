@@ -30,6 +30,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         System.out.println("Principal Name: " + principal.getName());
+        System.out.println("Hit /me with principal: " + principal);
         return authService.getCurrentUser(principal);
     }
 }

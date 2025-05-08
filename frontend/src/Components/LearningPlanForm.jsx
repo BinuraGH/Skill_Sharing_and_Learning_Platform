@@ -1,12 +1,20 @@
 import React from 'react';
 
+const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const LearningPlanForm = ({
   formData,
   setFormData,
   isEditing,
   onSubmit,
   onCancel,
-  onLoadPlans,
 }) => {
   const updateTopic = (index, key, value) => {
     const updatedTopics = [...formData.topics];
@@ -29,6 +37,35 @@ const LearningPlanForm = ({
     });
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (formData.topics.length === 0) {
+      alert('Please add at least one topic.');
+      return;
+    }
+
+    if (formData.thumbnailUrl && !isValidUrl(formData.thumbnailUrl)) {
+      alert('Please enter a valid Thumbnail URL.');
+      return;
+    }
+
+    for (const topic of formData.topics) {
+      if (topic.videoUrl && !isValidUrl(topic.videoUrl)) {
+        alert('Please enter a valid Video URL for all topics.');
+        return;
+      }
+    }
+
+    const formWithId = {
+      ...formData,
+      updatedPlanId: formData.updatedPlanId || '', // safe fallback
+      price: formData.price ? Number(formData.price) : 0,
+    };
+
+    onSubmit(formWithId);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div className="bg-white w-full max-w-2xl p-6 rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto border">
@@ -43,33 +80,16 @@ const LearningPlanForm = ({
 
         <h3 className="text-2xl font-bold mb-6">{isEditing ? 'Update Plan' : 'Create Plan'}</h3>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit(formData);
-          }}
-          className="space-y-5"
-        >
-          {/* User ID + Load Button */}
-          <div className="flex gap-3 items-center">
-            <input
-              name="userId"
-              value={formData.userId}
-              onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-              placeholder="User ID"
-              className="flex-grow border border-gray-300 p-2 rounded-md"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => onLoadPlans(formData.userId)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-            >
-              🔄 Load My Plans
-            </button>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            name="userId"
+            value={formData.userId}
+            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+            placeholder="User ID"
+            className="w-full border border-gray-300 p-2 rounded-md"
+            required
+          />
 
-          {/* Plan Fields */}
           <input
             name="title"
             value={formData.title}
@@ -105,12 +125,11 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          {/* Paid Course Toggle */}
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
               id="isPaid"
-              checked={formData.isPaid}
+              checked={formData.isPaid || false}
               onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
             />
             <label htmlFor="isPaid" className="text-sm font-medium text-gray-700">
@@ -118,13 +137,14 @@ const LearningPlanForm = ({
             </label>
           </div>
 
-          {/* Price Field */}
           {formData.isPaid && (
             <input
               type="number"
               name="price"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              value={formData.price || 0}
+              onChange={(e) =>
+                setFormData({ ...formData, price: Number(e.target.value) })
+              }
               placeholder="Price (LKR)"
               className="w-full border p-2 rounded-md"
               min="0"
@@ -132,7 +152,6 @@ const LearningPlanForm = ({
             />
           )}
 
-          {/* Topics */}
           <div>
             <h4 className="font-semibold mb-2">Topics</h4>
             {formData.topics.map((topic, index) => (
@@ -142,6 +161,7 @@ const LearningPlanForm = ({
               >
                 <input
                   type="text"
+                  name={`topicTitle-${index}`}
                   placeholder="Topic Title"
                   value={topic.title}
                   onChange={(e) => updateTopic(index, 'title', e.target.value)}
@@ -149,6 +169,7 @@ const LearningPlanForm = ({
                   required
                 />
                 <textarea
+                  name={`topicDescription-${index}`}
                   placeholder="Topic Description"
                   value={topic.description}
                   onChange={(e) => updateTopic(index, 'description', e.target.value)}
@@ -156,6 +177,7 @@ const LearningPlanForm = ({
                 />
                 <input
                   type="text"
+                  name={`topicVideo-${index}`}
                   placeholder="Video URL"
                   value={topic.videoUrl}
                   onChange={(e) => updateTopic(index, 'videoUrl', e.target.value)}
@@ -164,7 +186,8 @@ const LearningPlanForm = ({
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={topic.completed}
+                    name={`topicCompleted-${index}`}
+                    checked={topic.completed || false}
                     onChange={(e) => updateTopic(index, 'completed', e.target.checked)}
                   />
                   <span className="text-sm">Completed</span>
@@ -187,7 +210,6 @@ const LearningPlanForm = ({
             </button>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end gap-3 mt-6">
             <button
               type="submit"

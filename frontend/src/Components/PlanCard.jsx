@@ -54,7 +54,7 @@
 // };
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EmojiReactions from "../Components/EmojiReactions"; // adjust path as needed
+import EmojiReactions from "../Components/EmojiReactions";
 
 const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const navigate = useNavigate();
@@ -62,33 +62,37 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   if (!plan) return null;
 
-  const { id, title, description, thumbnailUrl, topics = [] } = plan;
+  const {
+    _id = plan.id, // fallback if _id is undefined
+    title,
+    description,
+    thumbnailUrl,
+    topics = [],
+  } = plan;
+
+  const planId = _id;
 
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
       e.target.closest(".delete-btn") ||
       e.target.closest(".emoji-wrapper")
-    ) {
+    )
       return;
-    }
-    navigate(`/plans/${id}`);
+    navigate(`/plans/${planId}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
       className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
-
     >
-      {/* Thumbnail */}
       <img
         src={thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image"}
         alt={title || "Course Thumbnail"}
         className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
       />
 
-      {/* Content */}
       <div className="p-4 flex flex-col gap-2">
         <h3 className="text-lg font-semibold text-gray-800 truncate">
           {title || "Untitled Course"}
@@ -100,14 +104,13 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         {topics.length > 0 && (
           <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 max-h-20 overflow-hidden">
             {topics.slice(0, 3).map((topic, idx) => (
-              <li key={idx} className="truncate">
+              <li key={`${planId}-topic-${idx}`} className="truncate">
                 {topic.title || `Topic ${idx + 1}`}
               </li>
             ))}
           </ul>
         )}
 
-        {/* Action or Emoji */}
         <div className="pt-4">
           {showActions ? (
             <div className="flex gap-2">
@@ -115,7 +118,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="edit-btn flex-1 text-blue-600 border border-blue-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit();
+                  onEdit(plan); // ✅ pass the current plan
                 }}
               >
                 ✏️ Edit
@@ -124,7 +127,8 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete();
+                  console.log("🧪 Delete button clicked:", planId);
+                  onDelete(plan);
                 }}
               >
                 🗑 Delete
