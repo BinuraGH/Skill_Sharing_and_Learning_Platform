@@ -51,7 +51,7 @@ const Navbar = () => {
                 <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
               </li>
               <li>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">Edit Profile</a>
+                <a href="/editprofile" className="block px-4 py-2 hover:bg-gray-100">Edit Profile</a>
               </li>
               <li>
                 <a href="#" className="block px-4 py-2 text-red-500 hover:bg-gray-100">Log out</a>

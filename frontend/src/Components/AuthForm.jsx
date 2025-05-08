@@ -110,7 +110,7 @@ const AuthForm = ({ type }) => {
         <>
           <hr />
           <button type="button" className="google" onClick={handleGoogleLogin}>Sign in with Google</button>
-          <button type="button" className="facebook">Sign in with Facebook</button>
+          {/* <button type="button" className="facebook">Sign in with Facebook</button> */}
         </>
       )}
     </form>

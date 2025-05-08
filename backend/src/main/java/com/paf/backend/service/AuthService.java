@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.paf.backend.document.User;
+import com.paf.backend.dto.CurrentUserDTO;
 import com.paf.backend.dto.LoginDTO;
 import com.paf.backend.dto.UserDto;
 import com.paf.backend.repository.UserRepository;
@@ -44,7 +45,13 @@ public class AuthService {
         
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            return ResponseEntity.ok(user); // Return the full user object
+            CurrentUserDTO response = new CurrentUserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+            );
+            return ResponseEntity.ok(response);
         }
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
