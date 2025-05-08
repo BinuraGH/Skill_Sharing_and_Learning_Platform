@@ -41,7 +41,9 @@ const ProfilePage = () => {
                   alt="Avatar"
                   className="w-28 h-28 rounded-full border-4 border-white -mt-16 shadow-lg"
                 />
+
                 <h2 className="text-xl font-bold mt-4">{user?.name || 'Loading...'}</h2>
+
                 <p className="text-gray-500">@alexj</p>
               </div>
               <div className="mt-4 text-sm text-gray-700">
@@ -104,11 +106,14 @@ const ProfilePage = () => {
                 <div className="flex items-center gap-3">
                   <img
                     src="https://randomuser.me/api/portraits/men/32.jpg"
+
                     alt="Jane"
                     className="w-10 h-10 rounded-full"
                   />
                   <div>
+
                     <p className="font-medium">Alex johnson</p>
+
                     <span className="text-xs text-gray-500">Skill Share</span>
                   </div>
                 </div>
@@ -117,9 +122,11 @@ const ProfilePage = () => {
 
               {/* Post Image */}
               <img
+
                 src={require('./react.png')}
                 alt="Post"
                 className="rounded-md w-full h-42 object-cover mb-3"
+
               />
 
               {/* Post Text */}
