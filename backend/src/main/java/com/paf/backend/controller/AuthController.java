@@ -10,6 +10,7 @@ import com.paf.backend.service.AuthService;
 
 import java.security.Principal;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
