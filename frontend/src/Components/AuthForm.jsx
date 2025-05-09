@@ -26,7 +26,7 @@ const AuthForm = ({ type }) => {
     }
 
     try {
-      const endpoint = type === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const endpoint = type === 'signup' ? 'http://localhost:8080/api/auth/signup' : 'http://localhost:8080/api/auth/login';
 
       const payload = {
         email: formData.email,
@@ -34,8 +34,10 @@ const AuthForm = ({ type }) => {
         ...(type === 'signup' && { name: formData.name }),
       };
 
-      const response = await axios.post(endpoint, payload);
-
+      const response = await axios.post(endpoint, payload, {
+        withCredentials: true, // Important for cookies/session
+      });
+      
       setMessage(`${type === 'signup' ? 'Signup' : 'Login'} successful!`);
       console.log('Response:', response.data);
 
