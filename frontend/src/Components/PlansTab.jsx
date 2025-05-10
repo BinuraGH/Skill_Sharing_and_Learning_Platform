@@ -1,54 +1,68 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PlanCard from '../Components/PlanCard';
 
 const PlansTab = () => {
   const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
+  const [user, setUser] = useState(null); // optional: store user
+
+  useEffect(() => {
+    const fetchUserAndPlans = async () => {
+      try {
+        // 🔹 1. Fetch user details
+        const userRes = await fetch('http://localhost:8080/api/auth/me', {
+          credentials: 'include', // important if using cookies/session
+        });
+
+        if (!userRes.ok) throw new Error('Failed to fetch user');
+
+        const userData = await userRes.json();
+        console.log("👤 Logged-in User:", userData);
+        setUser(userData); // store if needed
+
+        // 🔹 2. Fetch learning plans
+        const plansRes = await fetch('http://localhost:8080/api/plans');
+        if (!plansRes.ok) throw new Error('Failed to fetch plans');
+
+        const plansData = await plansRes.json();
+        setPlans(plansData);
+      } catch (error) {
+        console.error("❌ Error fetching data:", error);
+      }
+    };
+
+    fetchUserAndPlans();
+  }, []);
 
   return (
-    <div className="tab-content">
-      {/* Header section */}
-      <div className="plans-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Your Learning Plans</h3>
-        <button onClick={() => navigate('/plans')} className="manage-btn">
-          Manage Plans
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-white to-purple-50 py-10 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-10">
+          <h3 className="text-3xl font-bold text-gray-800">All Learning Plans</h3>
+          <button
+            onClick={() => navigate('/plans')}
+            className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition"
+          >
+            Manage Plans
+          </button>
+        </div>
 
-      {/* Example Post */}
-      <div className="post">
-        <div className="post-header">
-          <img src="https://randomuser.me/api/portraits/men/52.jpg" alt="Cameron Williamson" />
-          <div>
-            <p>Cameron Williamson</p>
-            <small>Plan Share</small>
+        {/* Plan Cards Grid */}
+        {plans.length > 0 ? (
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            {plans.map((plan) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                showActions={false}
+              />
+            ))}
           </div>
-        </div>
-
-        <p>My roadmap to becoming a fullstack developer:</p>
-
-        <div className="plan-box">
-          <ul>
-            <li>HTML, CSS & JS Basics (2 weeks)</li>
-            <li>React Frontend (4 weeks)</li>
-            <li>Node.js Backend (4 weeks)</li>
-          </ul>
-        </div>
-
-        <div className="post-footer">
-          <span>💜 312</span>
-          <span>💬 24 comments</span>
-        </div>
-
-        <div className="comments">
-          <div className="comment">
-            <strong>Linda:</strong> Love the structure. So inspiring!
-          </div>
-          <div className="comment">
-            <strong>Sam:</strong> I'm on the same path! Good luck 🍀
-          </div>
-        </div>
-
-        <input className="comment-input" placeholder="Add a comment..." />
+        ) : (
+          <p className="text-gray-500 text-center">No learning plans available.</p>
+        )}
       </div>
     </div>
   );

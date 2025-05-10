@@ -10,6 +10,7 @@ import com.paf.backend.service.AuthService;
 
 import java.security.Principal;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -30,6 +31,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         System.out.println("Principal Name: " + principal.getName());
+        System.out.println("Hit /me with principal: " + principal);
         return authService.getCurrentUser(principal);
     }
 }
