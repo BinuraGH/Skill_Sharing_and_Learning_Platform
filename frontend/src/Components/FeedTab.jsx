@@ -6,8 +6,9 @@ import { FaChevronDown, FaChevronUp, FaPhotoVideo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const FeedTab = () => {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+  // const [comments, setComments] = useState([]);
+  const [postComments, setPostComments] = useState({});
+  const [newComment, setNewComment] = useState({});
   const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
@@ -18,51 +19,54 @@ const FeedTab = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
 
-  // Hardcoded IDs
-  // const userId = "680cb06ce666217f76cff268";
-  const postId = "680d1515792c2d35b5572f28";
+     useEffect(() => {
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get('http://localhost:8080/api/auth/me', {
+            withCredentials: true, // Important for session-based auth!
+          });
+          setUser(res.data);
+          console.log("Data dee", res.data);
+        } catch (err) {
+          console.error('Failed to fetch user:', err);
+        }
+      };
+  
+      fetchUser();
+    }, []);
 
-  useEffect(() => {
-    fetchComments();
-    fetchUser();
-  }, []);
-
-  const fetchComments = async () => {
+  const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`http://localhost:8080/api/comments/post/${postId}`);
-      setComments(res.data);
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: res.data
+    }));
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
   };
 
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get('http://localhost:8080/api/auth/me', {
-        withCredentials: true, // Important for session-based auth!
-      });
-      setUser(res.data);
-      console.log("Data dee", res.data);
-    } catch (err) {
-      console.error('Failed to fetch user:', err);
-    }
-  };
-
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+  const handleAddComment = async (postId) => {
+    const commentText = newComment[postId];
+    if (!commentText || typeof commentText !== 'string' || !commentText.trim()) return;
     setIsPosting(true);
 
     try {
-      const commentData = { text: newComment, userId: user?.id, postId };
-      const res = await axios.post('http://localhost:8080/api/comments', commentData);
+      const commentData = {
+        text: newComment[postId],
+        userId: user?.id,
+        userName: user?.name,  // ✅ pass this to backend
+        postId: postId,
+      };      const res = await axios.post('http://localhost:8080/api/comments', commentData);
+      console.log('Comment added:', res.data);
 
-      if (res.data) {
-        setComments(prev => [...prev, res.data]);
-      } else {
-        fetchComments();
-      }
+      setPostComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), res.data]
+    }));
 
-      setNewComment('');
+      setNewComment(prev => ({ ...prev, [postId]: '' }));
     } catch (error) {
       console.error('Error adding comment:', error);
     } finally {
@@ -71,29 +75,54 @@ const FeedTab = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    try {
-      const res = await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
-      console.log(res.data); // 👈 log backend response ("Success deleted with {id}")
+  try {
+    await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
 
-      setComments(prevComments => prevComments.filter(c => c.id !== commentId)); // 👈 update local UI
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
-  };
+    // Find the post that contains this comment
+    setPostComments(prevComments => {
+      const updatedComments = { ...prevComments };
+
+      for (const postId in updatedComments) {
+        const commentList = updatedComments[postId];
+        if (Array.isArray(commentList)) {
+          updatedComments[postId] = commentList.filter(c => c.id !== commentId);
+        }
+      }
+
+      return updatedComments;
+    });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+  }
+};
 
   const navigate = useNavigate();
 
-  const handleEditComment = async (commentId, newText) => {
-    if (!newText.trim()) return;
+const handleEditComment = async (commentId, newText) => {
+  if (!newText.trim()) return;
 
-    try {
-      const updatedComment = { text: newText };
-      const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
-      setComments(prev => prev.map(c => (c.id === commentId ? res.data : c)));
-    } catch (error) {
-      console.error('Error editing comment:', error);
-    }
-  };
+  try {
+    const updatedComment = { text: newText };
+    const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
+
+    // Find the postId that contains this comment
+    setPostComments(prev => {
+      const updated = { ...prev };
+
+      for (const postId in updated) {
+        updated[postId] = updated[postId].map(c =>
+          c.id === commentId ? res.data : c
+        );
+      }
+
+      return updated;
+    });
+
+  } catch (error) {
+    console.error('Error editing comment:', error);
+  }
+};
+
 
   const handleLikeClick = () => {
     setLiked(!liked);
@@ -119,7 +148,6 @@ const FeedTab = () => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("userId", user?.id);
-    formData.append("uname", user?.name);
     formData.append("description", description);
     mediaFiles.forEach(file => formData.append("media", file));
 
@@ -144,11 +172,19 @@ const FeedTab = () => {
   const fetchPosts = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/skill-sharing");
-      setPosts(res.data.reverse()); // show latest first
+      const postList = res.data.reverse();
+      setPosts(postList);
+      
+      // 👇 Fetch comments for all posts once when posts are loaded
+      postList.forEach(post => {
+        fetchComments(post.id);  // ✅ Ensure `post.id` is used consistently
+      });
+  
     } catch (err) {
       console.error("Fetch posts error:", err);
     }
   };
+  
 
   useEffect(() => {
     fetchPosts();
@@ -317,7 +353,7 @@ const FeedTab = () => {
       <button
         className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-center font-medium"
         style={{ width: '160px', alignSelf: 'flex-end' }}
-        onClick={() => navigate('/profile')}
+        onClick={() => navigate('/userposts')}
       >
         Manage Posts
       </button>
@@ -328,13 +364,13 @@ const FeedTab = () => {
           No posts yet 💤
         </div>
       ) : (
-        posts.map((post, idx) => (
-          <div key={idx} className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
+        posts.map((post) => (
+          <div key={post.id} className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
             {/* Header */}
             <div className="flex items-center space-x-3">
-              <img src={`https://randomuser.me/api/portraits/men/75.jpg`} alt="User" className="w-10 h-10 rounded-full" />
+              <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
+                <div className="font-semibold text-gray-800">{post.userId}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>
@@ -354,24 +390,36 @@ const FeedTab = () => {
                 {liked ? "💜 Liked" : "🤍 Like"}
               </span>
               <span
-                onClick={() => setShowComments(!showComments)}
-                className="cursor-pointer text-xl"
-              >
-                💬 {showComments ? `Hide ${comments.length} Comments` : `View ${comments.length} Comments`}
-              </span>
+              onClick={() => {
+                const postId = post.id || post._id;
+                setShowComments((prev) => ({
+                  ...prev,
+                  [postId]: !prev[postId],
+                }));
+                fetchComments(postId);
+                
+              }}
+              className="cursor-pointer text-xl"
+            >
+              💬{" "}
+              {showComments[post.id]
+                ? `Hide ${postComments[post.id]?.length || 0} Comments`
+                : `View ${postComments[post.id]?.length || 0} Comments`}
+            </span>
             </div>
 
             {/* Comments Section */}
-            {showComments && (
+            {showComments[post.id] && (
               <>
                 <div className="comments mt-4 space-y-3">
-                  {comments.map(comment => (
+                  {(postComments[post.id] || []).map((comment) =>  (
                     <CommentItem
-                      key={comment._id}
-                      comment={comment}
-                      onDelete={handleDeleteComment}
-                      onEdit={handleEditComment}
-                    />
+                    key={comment.id}
+                    comment={comment}
+                    onDelete={handleDeleteComment}
+                    onEdit={handleEditComment}
+                  />
+                  
                   ))}
                 </div>
 
@@ -379,14 +427,16 @@ const FeedTab = () => {
                   <input
                     className="flex-1 border rounded-lg p-2"
                     placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                    value={newComment[post.id] || ""}
+                    onChange={(e) =>
+                      setNewComment((prev) => ({ ...prev, [post.id]: e.target.value }))
+                    }
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
                     disabled={isPosting}
                   />
                   <button
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-                    onClick={handleAddComment}
+                    onClick={() => handleAddComment(post.id)}
                     disabled={isPosting}
                   >
                     {isPosting ? "Posting..." : "Post"}
@@ -418,7 +468,7 @@ const CommentItem = ({ comment, onDelete, onEdit }) => {
     <div className="flex items-start gap-2">
       <div className="flex-1">
         <strong className="text-sm text-gray-700">
-          {comment.userId?.substring(0, 6) || 'User'}
+          {comment.userName || 'User'}
         </strong>
 
         {isEditing ? (
@@ -469,3 +519,5 @@ const CommentItem = ({ comment, onDelete, onEdit }) => {
     </div>
   );
 };
+
+
