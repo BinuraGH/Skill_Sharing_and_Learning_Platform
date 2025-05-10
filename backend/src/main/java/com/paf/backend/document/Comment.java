@@ -16,6 +16,7 @@ public class Comment {
     @Id
     private String id;
     private String text;
+    private String userName;
     private String userId;
     private String postId;
     private Date createdAt;

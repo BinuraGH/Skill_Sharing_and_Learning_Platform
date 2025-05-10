@@ -45,14 +45,16 @@ public class CommentService {
 
     public ResponseEntity<?> saveComment(Comment comment){
         try{
-            comment.setCreatedAt(new Date(System.currentTimeMillis()));
-            comment.setUpdatedAt(new Date(System.currentTimeMillis()));
+            comment.setCreatedAt(new Date());
+            comment.setUpdatedAt(new Date());
+            // userName is already part of the object if passed from frontend
             commentRepository.save(comment);
-            return new ResponseEntity<Comment>(comment, HttpStatus.OK);
+            return new ResponseEntity<>(comment, HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     public ResponseEntity<?> updateCommentById(String id,Comment comment){
         Optional<Comment> existingComment =  commentRepository.findById(id);

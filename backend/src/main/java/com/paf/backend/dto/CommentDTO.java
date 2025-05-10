@@ -9,7 +9,7 @@ public class CommentDTO {
     private String id;
     private String text;
     private String userId;
-    private String username;
+    private String userName;
     private String profileImage;
     private String postId;
     private Date createdAt;
