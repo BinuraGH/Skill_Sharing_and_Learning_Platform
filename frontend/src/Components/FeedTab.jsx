@@ -148,6 +148,7 @@ const FeedTab = () => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("userId", user?.id);
+    formData.append("uname", user?.name);
     formData.append("description", description);
     mediaFiles.forEach(file => formData.append("media", file));
 
