@@ -46,11 +46,6 @@ public class LearningPlanController {
         return service.updatePlan(id, dto);
     }
 
-    // @DeleteMapping("/{id}")
-    // public void deletePlan(@PathVariable String id,
-    //                        @RequestParam String requestingUserId) {
-    //     service.deletePlan(id, requestingUserId);
-    // }
     @DeleteMapping("/{id}")
     public void deletePlan(@PathVariable String id) {
         service.deletePlan(id);
@@ -67,13 +62,14 @@ public class LearningPlanController {
         return service.getPlanWithProgress(id);
     }
 
-    @GetMapping("/filter")
-    public List<LearningPlan> filterPlans(@RequestParam(required = false) Boolean isPaid) {
-        if (isPaid == null) {
-            return service.getAllPlans();
-        }
-        return service.getPlansByPaymentStatus(isPaid);
-    }
+    // 🔴 Removed filter by payment status
+    // @GetMapping("/filter")
+    // public List<LearningPlan> filterPlans(@RequestParam(required = false) Boolean isPaid) {
+    //     if (isPaid == null) {
+    //         return service.getAllPlans();
+    //     }
+    //     return service.getPlansByPaymentStatus(isPaid);
+    // }
 
     @GetMapping("/followed/{userId}")
     public List<LearningPlan> getPlansByFollowedUsers(@PathVariable String userId) {
