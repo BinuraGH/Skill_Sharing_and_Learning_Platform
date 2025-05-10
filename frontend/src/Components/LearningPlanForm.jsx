@@ -37,16 +37,18 @@ const LearningPlanForm = ({
     });
   };
 
+  const convertToEmbedUrl = (url) => {
+    if (url.includes("watch?v=")) {
+      return url.replace("watch?v=", "embed/");
+    }
+    return url;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (formData.topics.length === 0) {
       alert('Please add at least one topic.');
-      return;
-    }
-
-    if (formData.thumbnailUrl && !isValidUrl(formData.thumbnailUrl)) {
-      alert('Please enter a valid Thumbnail URL.');
       return;
     }
 
@@ -98,14 +100,6 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          <input
-            name="thumbnailUrl"
-            value={formData.thumbnailUrl}
-            onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-            placeholder="Thumbnail URL"
-            className="w-full border p-2 rounded-md"
-          />
-
           <textarea
             name="courseDescription"
             value={formData.courseDescription}
@@ -144,7 +138,7 @@ const LearningPlanForm = ({
                   name={`topicVideo-${index}`}
                   placeholder="Video URL"
                   value={topic.videoUrl}
-                  onChange={(e) => updateTopic(index, 'videoUrl', e.target.value)}
+                  onChange={(e) => updateTopic(index, 'videoUrl', convertToEmbedUrl(e.target.value))}
                   className="w-full border p-2 rounded-md"
                 />
                 <div className="flex items-center gap-2">
