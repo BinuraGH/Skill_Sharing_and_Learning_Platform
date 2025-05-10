@@ -19,7 +19,7 @@ public class SkillShareService {
     @Autowired
     private SkillShareRepository repository;
 
-    public SkillSharing createSkillSharing(String userId, String description, List<MultipartFile> files)
+    public SkillSharing createSkillSharing(String userId, String uname, String description, List<MultipartFile> files)
             throws Exception {
         if (files != null && files.size() > 3) {
             throw new IllegalArgumentException("You can upload up to 3 media files.");
@@ -35,7 +35,7 @@ public class SkillShareService {
             mediaUrls.add(mediaUrl);
         }
 
-        SkillSharing skillSharing = new SkillSharing(userId, mediaUrls, description, LocalDateTime.now());
+        SkillSharing skillSharing = new SkillSharing(userId, uname, mediaUrls, description, LocalDateTime.now());
         return repository.save(skillSharing);
     }
 

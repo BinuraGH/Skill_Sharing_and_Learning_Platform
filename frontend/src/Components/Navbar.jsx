@@ -1,11 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
+import axios from 'axios';
 
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          withCredentials: true, // Important for session-based auth!
+        });
+        setUser(res.data);
+        console.log("Data dee", res.data);
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -18,9 +36,11 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const navigate = useNavigate();
+
   return (
     <nav className="nav-bar relative">
-      <h2 className="logo">CodeShare</h2>
+      <h2 className="logo" style={{ cursor: 'pointer' }} onClick={() => navigate('/Home')}>CodeShare</h2>
       <input
         className="search-input"
         type="text"
@@ -30,7 +50,7 @@ const Navbar = () => {
         <button className="icon-btn">🏠</button>
         <button className="icon-btn">🔔</button>
         <button className="icon-btn">📩</button>
-        
+
         <button className="profile-pic" onClick={() => setDropdownOpen(!dropdownOpen)}>
           <img
             src="https://randomuser.me/api/portraits/men/75.jpg"
@@ -43,8 +63,8 @@ const Navbar = () => {
         {dropdownOpen && (
           <div className="absolute right-5 top-16 w-48 bg-white shadow-lg border rounded-md z-50">
             <div className="p-4 border-b">
-              <p className="font-semibold text-sm">Alex Johnson</p>
-              <p className="text-xs text-gray-500">@alexj</p>
+              <p className="font-semibold text-sm">{user?.name}</p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
             <ul className="text-sm">
               <li>

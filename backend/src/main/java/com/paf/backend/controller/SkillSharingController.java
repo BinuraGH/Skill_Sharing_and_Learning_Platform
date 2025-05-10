@@ -21,10 +21,11 @@ public class SkillSharingController {
     @PostMapping(consumes = { "multipart/form-data" })
     public ResponseEntity<?> create(
             @RequestParam("userId") String userId,
+            @RequestParam("uname") String uname,
             @RequestParam("description") String description,
             @RequestParam(value = "media", required = false) List<MultipartFile> mediaFiles) {
         try {
-            SkillSharing created = service.createSkillSharing(userId, description, mediaFiles);
+            SkillSharing created = service.createSkillSharing(userId, uname, description, mediaFiles);
             return ResponseEntity.ok(created);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
