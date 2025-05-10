@@ -43,8 +43,7 @@ const ProfilePage = () => {
                 />
 
                 <h2 className="text-xl font-bold mt-4">{user?.name || 'Loading...'}</h2>
-
-                <p className="text-gray-500">@alexj</p>
+                <p className="text-gray-500">{user?.id || 'Loading...'}</p>
               </div>
               <div className="mt-4 text-sm text-gray-700">
                 <p className="mb-2">
