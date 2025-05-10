@@ -34,10 +34,11 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 🔹 Add this here
             .and()
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/signup", "/api/auth/login","/api/auth/all-users").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/comments/**").permitAll()
                 .requestMatchers("/api/plans/**").permitAll()
+                .requestMatchers("/api/follow/**").permitAll()
                 .requestMatchers("/api/progressupdates/**").permitAll()
                 .requestMatchers("/api/skill-sharing/**").permitAll()
                 .anyRequest().authenticated()
@@ -65,7 +66,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000")); // Frontend origin
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         // ✅ These headers are commonly required for authentication and JSON requests
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         config.setAllowedHeaders(List.of("*"));
