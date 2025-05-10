@@ -19,29 +19,29 @@ const FeedTab = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
 
-     useEffect(() => {
-      const fetchUser = async () => {
-        try {
-          const res = await axios.get('http://localhost:8080/api/auth/me', {
-            withCredentials: true, // Important for session-based auth!
-          });
-          setUser(res.data);
-          console.log("Data dee", res.data);
-        } catch (err) {
-          console.error('Failed to fetch user:', err);
-        }
-      };
-  
-      fetchUser();
-    }, []);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          withCredentials: true, // Important for session-based auth!
+        });
+        setUser(res.data);
+        console.log("Data dee", res.data);
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`http://localhost:8080/api/comments/post/${postId}`);
-        setPostComments(prev => ({
-          ...prev,
-          [postId]: res.data
-    }));
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: res.data
+      }));
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -58,13 +58,13 @@ const FeedTab = () => {
         userId: user?.id,
         userName: user?.name,  // ✅ pass this to backend
         postId: postId,
-      };      const res = await axios.post('http://localhost:8080/api/comments', commentData);
+      }; const res = await axios.post('http://localhost:8080/api/comments', commentData);
       console.log('Comment added:', res.data);
 
       setPostComments(prev => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), res.data]
-    }));
+        ...prev,
+        [postId]: [...(prev[postId] || []), res.data]
+      }));
 
       setNewComment(prev => ({ ...prev, [postId]: '' }));
     } catch (error) {
@@ -75,53 +75,53 @@ const FeedTab = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
-  try {
-    await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
+    try {
+      await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
 
-    // Find the post that contains this comment
-    setPostComments(prevComments => {
-      const updatedComments = { ...prevComments };
+      // Find the post that contains this comment
+      setPostComments(prevComments => {
+        const updatedComments = { ...prevComments };
 
-      for (const postId in updatedComments) {
-        const commentList = updatedComments[postId];
-        if (Array.isArray(commentList)) {
-          updatedComments[postId] = commentList.filter(c => c.id !== commentId);
+        for (const postId in updatedComments) {
+          const commentList = updatedComments[postId];
+          if (Array.isArray(commentList)) {
+            updatedComments[postId] = commentList.filter(c => c.id !== commentId);
+          }
         }
-      }
 
-      return updatedComments;
-    });
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-  }
-};
+        return updatedComments;
+      });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
 
   const navigate = useNavigate();
 
-const handleEditComment = async (commentId, newText) => {
-  if (!newText.trim()) return;
+  const handleEditComment = async (commentId, newText) => {
+    if (!newText.trim()) return;
 
-  try {
-    const updatedComment = { text: newText };
-    const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
+    try {
+      const updatedComment = { text: newText };
+      const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
 
-    // Find the postId that contains this comment
-    setPostComments(prev => {
-      const updated = { ...prev };
+      // Find the postId that contains this comment
+      setPostComments(prev => {
+        const updated = { ...prev };
 
-      for (const postId in updated) {
-        updated[postId] = updated[postId].map(c =>
-          c.id === commentId ? res.data : c
-        );
-      }
+        for (const postId in updated) {
+          updated[postId] = updated[postId].map(c =>
+            c.id === commentId ? res.data : c
+          );
+        }
 
-      return updated;
-    });
+        return updated;
+      });
 
-  } catch (error) {
-    console.error('Error editing comment:', error);
-  }
-};
+    } catch (error) {
+      console.error('Error editing comment:', error);
+    }
+  };
 
 
   const handleLikeClick = () => {
@@ -148,6 +148,7 @@ const handleEditComment = async (commentId, newText) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("userId", user?.id);
+    formData.append("uname", user?.name);
     formData.append("description", description);
     mediaFiles.forEach(file => formData.append("media", file));
 
@@ -174,17 +175,17 @@ const handleEditComment = async (commentId, newText) => {
       const res = await axios.get("http://localhost:8080/api/skill-sharing");
       const postList = res.data.reverse();
       setPosts(postList);
-      
+
       // 👇 Fetch comments for all posts once when posts are loaded
       postList.forEach(post => {
         fetchComments(post.id);  // ✅ Ensure `post.id` is used consistently
       });
-  
+
     } catch (err) {
       console.error("Fetch posts error:", err);
     }
   };
-  
+
 
   useEffect(() => {
     fetchPosts();
@@ -370,7 +371,7 @@ const handleEditComment = async (commentId, newText) => {
             <div className="flex items-center space-x-3">
               <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800">{post.userId}</div>
+                <div className="font-semibold text-gray-800">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>
@@ -390,36 +391,36 @@ const handleEditComment = async (commentId, newText) => {
                 {liked ? "💜 Liked" : "🤍 Like"}
               </span>
               <span
-              onClick={() => {
-                const postId = post.id || post._id;
-                setShowComments((prev) => ({
-                  ...prev,
-                  [postId]: !prev[postId],
-                }));
-                fetchComments(postId);
-                
-              }}
-              className="cursor-pointer text-xl"
-            >
-              💬{" "}
-              {showComments[post.id]
-                ? `Hide ${postComments[post.id]?.length || 0} Comments`
-                : `View ${postComments[post.id]?.length || 0} Comments`}
-            </span>
+                onClick={() => {
+                  const postId = post.id || post._id;
+                  setShowComments((prev) => ({
+                    ...prev,
+                    [postId]: !prev[postId],
+                  }));
+                  fetchComments(postId);
+
+                }}
+                className="cursor-pointer text-xl"
+              >
+                💬{" "}
+                {showComments[post.id]
+                  ? `Hide ${postComments[post.id]?.length || 0} Comments`
+                  : `View ${postComments[post.id]?.length || 0} Comments`}
+              </span>
             </div>
 
             {/* Comments Section */}
             {showComments[post.id] && (
               <>
                 <div className="comments mt-4 space-y-3">
-                  {(postComments[post.id] || []).map((comment) =>  (
+                  {(postComments[post.id] || []).map((comment) => (
                     <CommentItem
-                    key={comment.id}
-                    comment={comment}
-                    onDelete={handleDeleteComment}
-                    onEdit={handleEditComment}
-                  />
-                  
+                      key={comment.id}
+                      comment={comment}
+                      onDelete={handleDeleteComment}
+                      onEdit={handleEditComment}
+                    />
+
                   ))}
                 </div>
 
