@@ -24,7 +24,7 @@ const FeedTab = () => {
 
   useEffect(() => {
     fetchComments();
-    fetchCurrentUser();
+    fetchUser();
   }, []);
 
   const fetchComments = async () => {
@@ -36,13 +36,15 @@ const FeedTab = () => {
     }
   };
 
-  const fetchCurrentUser = async () => {
+  const fetchUser = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/auth/me');
-      console.log(res.data)
-      setUser(res.data); // Set the user data from backend
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+      const res = await axios.get('http://localhost:8080/api/auth/me', {
+        withCredentials: true, // Important for session-based auth!
+      });
+      setUser(res.data);
+      console.log("Data dee", res.data);
+    } catch (err) {
+      console.error('Failed to fetch user:', err);
     }
   };
 
@@ -117,6 +119,7 @@ const FeedTab = () => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("userId", user?.id);
+    formData.append("uname", user?.name);
     formData.append("description", description);
     mediaFiles.forEach(file => formData.append("media", file));
 
@@ -314,7 +317,7 @@ const FeedTab = () => {
       <button
         className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-center font-medium"
         style={{ width: '160px', alignSelf: 'flex-end' }}
-        onClick={() => navigate('/userposts')}
+        onClick={() => navigate('/profile')}
       >
         Manage Posts
       </button>
@@ -329,9 +332,9 @@ const FeedTab = () => {
           <div key={idx} className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
             {/* Header */}
             <div className="flex items-center space-x-3">
-              <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
+              <img src={`https://randomuser.me/api/portraits/men/75.jpg`} alt="User" className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800">{post.userId}</div>
+                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>

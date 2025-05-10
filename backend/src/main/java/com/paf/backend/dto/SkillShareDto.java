@@ -5,6 +5,7 @@ import java.util.List;
 
 public class SkillShareDto {
     private String userId;
+    private String uname;
     private List<String> media;
     private String description;
     private LocalDateTime dateTime;
@@ -12,8 +13,9 @@ public class SkillShareDto {
     public SkillShareDto() {
     }
 
-    public SkillShareDto(String userId, List<String> media, String description, LocalDateTime dateTime) {
+    public SkillShareDto(String userId, String uname, List<String> media, String description, LocalDateTime dateTime) {
         this.userId = userId;
+        this.uname = uname;
         this.media = media;
         this.description = description;
         this.dateTime = dateTime;
@@ -25,6 +27,14 @@ public class SkillShareDto {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getUname() {
+        return uname;
+    }
+
+    public void setUname(String uname) {
+        this.uname = uname;
     }
 
     public List<String> getMedia() {
