@@ -28,7 +28,6 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
       return null;
     }
   };
-  
 
   const firstVideoUrl = topics.length > 0 ? topics[0].videoUrl : null;
   const videoThumbnail = firstVideoUrl ? getYoutubeThumbnail(firstVideoUrl) : null;
@@ -85,7 +84,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(plan);
+                  onDelete(planId); // ✅ Only pass the ID
                 }}
               >
                 🗑 Delete
