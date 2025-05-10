@@ -5,19 +5,34 @@ import PlanCard from '../Components/PlanCard';
 const PlansTab = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
+  const [user, setUser] = useState(null); // optional: store user
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchUserAndPlans = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/plans');
-        const data = await res.json();
-        setPlans(data);
+        // 🔹 1. Fetch user details
+        const userRes = await fetch('http://localhost:8080/api/auth/me', {
+          credentials: 'include', // important if using cookies/session
+        });
+
+        if (!userRes.ok) throw new Error('Failed to fetch user');
+
+        const userData = await userRes.json();
+        console.log("👤 Logged-in User:", userData);
+        setUser(userData); // store if needed
+
+        // 🔹 2. Fetch learning plans
+        const plansRes = await fetch('http://localhost:8080/api/plans');
+        if (!plansRes.ok) throw new Error('Failed to fetch plans');
+
+        const plansData = await plansRes.json();
+        setPlans(plansData);
       } catch (error) {
-        console.error("Error fetching plans:", error);
+        console.error("❌ Error fetching data:", error);
       }
     };
 
-    fetchPlans();
+    fetchUserAndPlans();
   }, []);
 
   return (

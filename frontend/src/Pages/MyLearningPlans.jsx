@@ -250,6 +250,7 @@ const ManagePlans = () => {
   const [showForm, setShowForm] = useState(false);
   const [plans, setPlans] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [user, setUser] = useState(null);
 
   const [formData, setFormData] = useState({
     userId: '', // ✅ Make sure this is set correctly when creating plans
@@ -271,10 +272,34 @@ const ManagePlans = () => {
 
   // ✅ Auto-fetch plans on load if needed (optional)
   useEffect(() => {
-    if (formData.userId) {
-      fetchPlans(formData.userId);
-    }
-  }, [formData.userId]);
+    const fetchUserAndPlans = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/auth/me', {
+          credentials: 'include', // if using cookies/sessions
+        });
+  
+        if (!res.ok) throw new Error('Failed to fetch user');
+  
+        const userData = await res.json();
+        console.log("👤 User data:", userData);
+        setUser(userData);
+  
+        // ✅ Set userId in formData
+        setFormData((prev) => ({
+          ...prev,
+          userId: userData.id,
+        }));
+  
+        // ✅ Fetch plans for that user
+        await fetchPlans(userData.id);
+      } catch (err) {
+        console.error("❌ Error loading user or plans:", err);
+      }
+    };
+  
+    fetchUserAndPlans();
+  }, []);
+  
 
   const fetchPlans = async (userId) => {
     try {

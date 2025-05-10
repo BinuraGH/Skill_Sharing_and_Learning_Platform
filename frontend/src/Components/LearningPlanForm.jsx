@@ -59,8 +59,7 @@ const LearningPlanForm = ({
 
     const formWithId = {
       ...formData,
-      updatedPlanId: formData.updatedPlanId || '', // safe fallback
-      price: formData.price ? Number(formData.price) : 0,
+      updatedPlanId: formData.updatedPlanId || '',
     };
 
     onSubmit(formWithId);
@@ -81,15 +80,6 @@ const LearningPlanForm = ({
         <h3 className="text-2xl font-bold mb-6">{isEditing ? 'Update Plan' : 'Create Plan'}</h3>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            name="userId"
-            value={formData.userId}
-            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-            placeholder="User ID"
-            className="w-full border border-gray-300 p-2 rounded-md"
-            required
-          />
-
           <input
             name="title"
             value={formData.title}
@@ -125,33 +115,7 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="isPaid"
-              checked={formData.isPaid || false}
-              onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
-            />
-            <label htmlFor="isPaid" className="text-sm font-medium text-gray-700">
-              Paid Course
-            </label>
-          </div>
-
-          {formData.isPaid && (
-            <input
-              type="number"
-              name="price"
-              value={formData.price || 0}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
-              }
-              placeholder="Price (LKR)"
-              className="w-full border p-2 rounded-md"
-              min="0"
-              required
-            />
-          )}
-
+          {/* Topics Section */}
           <div>
             <h4 className="font-semibold mb-2">Topics</h4>
             {formData.topics.map((topic, index) => (
