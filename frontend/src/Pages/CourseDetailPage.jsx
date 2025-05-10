@@ -23,14 +23,22 @@ const CourseDetailPage = () => {
   }, [id]);
 
   const handleMarkComplete = async (index) => {
-    await fetch(`http://localhost:8080/api/plans/${id}/topics/${index}/complete`, {
-      method: 'PATCH',
-    });
+    try {
+      await fetch(`http://localhost:8080/api/plans/${id}/topics/${index}/complete`, {
+        method: 'PATCH',
+      });
 
-    const res = await fetch(`http://localhost:8080/api/plans/${id}/progress`);
-    const data = await res.json();
-    setPlan(data);
-    setProgress(data.progressPercentage);
+      const updatedTopics = [...plan.topics];
+      updatedTopics[index].completed = true;
+
+      const completedCount = updatedTopics.filter(topic => topic.completed).length;
+      const newProgress = Math.round((completedCount / updatedTopics.length) * 100);
+
+      setPlan(prev => ({ ...prev, topics: updatedTopics }));
+      setProgress(newProgress);
+    } catch (err) {
+      console.error("❌ Error marking topic complete:", err);
+    }
   };
 
   if (!plan || !plan.topics) {
@@ -45,31 +53,18 @@ const CourseDetailPage = () => {
   const {
     title,
     courseDescription,
-    price,
-    isPaid,
     status,
     topics,
-    thumbnailUrl,
   } = plan;
 
   return (
     <>
       <Navbar />
       <div className="p-6 md:p-10 max-w-4xl mx-auto">
-        {/* Thumbnail */}
-        <div className="mb-6">
-          <img
-            src={thumbnailUrl || "https://via.placeholder.com/800x300.png?text=Course+Thumbnail"}
-            alt={title}
-            className="w-full h-64 object-cover rounded-lg shadow"
-          />
-        </div>
 
         {/* Title + Info */}
         <h1 className="text-3xl font-bold text-gray-800 mb-1">{title}</h1>
-        <p className="text-sm text-gray-500 mb-4">
-          <span className="font-semibold">{isPaid ? `$${price}` : "Free"}</span> · {status}
-        </p>
+        <p className="text-sm text-gray-500 mb-4">{status}</p>
         <p className="text-gray-700 mb-4">{courseDescription || "No course description provided."}</p>
 
         {/* Progress Bar */}

@@ -37,16 +37,18 @@ const LearningPlanForm = ({
     });
   };
 
+  const convertToEmbedUrl = (url) => {
+    if (url.includes("watch?v=")) {
+      return url.replace("watch?v=", "embed/");
+    }
+    return url;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (formData.topics.length === 0) {
       alert('Please add at least one topic.');
-      return;
-    }
-
-    if (formData.thumbnailUrl && !isValidUrl(formData.thumbnailUrl)) {
-      alert('Please enter a valid Thumbnail URL.');
       return;
     }
 
@@ -59,8 +61,7 @@ const LearningPlanForm = ({
 
     const formWithId = {
       ...formData,
-      updatedPlanId: formData.updatedPlanId || '', // safe fallback
-      price: formData.price ? Number(formData.price) : 0,
+      updatedPlanId: formData.updatedPlanId || '',
     };
 
     onSubmit(formWithId);
@@ -82,15 +83,6 @@ const LearningPlanForm = ({
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
-            name="userId"
-            value={formData.userId}
-            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-            placeholder="User ID"
-            className="w-full border border-gray-300 p-2 rounded-md"
-            required
-          />
-
-          <input
             name="title"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -108,14 +100,6 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          <input
-            name="thumbnailUrl"
-            value={formData.thumbnailUrl}
-            onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-            placeholder="Thumbnail URL"
-            className="w-full border p-2 rounded-md"
-          />
-
           <textarea
             name="courseDescription"
             value={formData.courseDescription}
@@ -125,33 +109,7 @@ const LearningPlanForm = ({
             className="w-full border p-2 rounded-md"
           />
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="isPaid"
-              checked={formData.isPaid || false}
-              onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
-            />
-            <label htmlFor="isPaid" className="text-sm font-medium text-gray-700">
-              Paid Course
-            </label>
-          </div>
-
-          {formData.isPaid && (
-            <input
-              type="number"
-              name="price"
-              value={formData.price || 0}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
-              }
-              placeholder="Price (LKR)"
-              className="w-full border p-2 rounded-md"
-              min="0"
-              required
-            />
-          )}
-
+          {/* Topics Section */}
           <div>
             <h4 className="font-semibold mb-2">Topics</h4>
             {formData.topics.map((topic, index) => (
@@ -180,7 +138,7 @@ const LearningPlanForm = ({
                   name={`topicVideo-${index}`}
                   placeholder="Video URL"
                   value={topic.videoUrl}
-                  onChange={(e) => updateTopic(index, 'videoUrl', e.target.value)}
+                  onChange={(e) => updateTopic(index, 'videoUrl', convertToEmbedUrl(e.target.value))}
                   className="w-full border p-2 rounded-md"
                 />
                 <div className="flex items-center gap-2">

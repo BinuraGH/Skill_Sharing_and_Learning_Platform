@@ -6,11 +6,27 @@ import { toast, ToastContainer } from 'react-toastify';
 const ShowUserPosts = () => {
 
     const [posts, setPosts] = useState([]);
-    const [comment, setComment] = useState("");
     const [editingPostId, setEditingPostId] = useState(null);
     const [updatedDescription, setUpdatedDescription] = useState("");
     const [showConfirm, setShowConfirm] = useState(false);
     const [postToDelete, setPostToDelete] = useState(null);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await axios.get('http://localhost:8080/api/auth/me', {
+                    withCredentials: true, // Important for session-based auth!
+                });
+                setUser(res.data);
+                console.log("Data dee", res.data);
+            } catch (err) {
+                console.error('Failed to fetch user:', err);
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     const fetchPosts = async () => {
         try {
@@ -24,6 +40,8 @@ const ShowUserPosts = () => {
     useEffect(() => {
         fetchPosts();
     }, []);
+
+    const yourposts = posts.filter(posts => posts.userId === user?.id);
 
     const handleEditClick = (post) => {
         setEditingPostId(post.id);
@@ -119,18 +137,18 @@ const ShowUserPosts = () => {
         <div className="max-w-3xl mx-auto p-4 space-y-6">
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {posts.length === 0 ? (
+            {yourposts.length === 0 ? (
                 <div className="text-center text-gray-500 text-lg font-medium mt-10">
                     No posts yet 💤
                 </div>
-            ) : (posts.map((post, idx) => (
+            ) : (yourposts.map((post, idx) => (
                 <div key={idx} className="bg-white shadow-md rounded-lg p-4 space-y-4">
                     {/* Header */}
                     <div className="flex justify-between items-center mt-2">
                         <div className="flex items-center space-x-3">
-                            <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
+                            <img src={`https://randomuser.me/api/portraits/men/75.jpg`} alt="User" className="w-10 h-10 rounded-full" />
                             <div>
-                                <div className="font-semibold text-gray-800">{post.userId}</div>
+                                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                                 <div className="text-sm text-gray-500">Skill Share</div>
                             </div>
                         </div>
