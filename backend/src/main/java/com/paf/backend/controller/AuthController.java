@@ -34,5 +34,10 @@ public class AuthController {
         System.out.println("Hit /me with principal: " + principal);
         return authService.getCurrentUser(principal);
     }
+    @GetMapping("/all-users")
+    public ResponseEntity<?> getAllUsers() {
+    return authService.getAllUsers();
+}
+
 }
 

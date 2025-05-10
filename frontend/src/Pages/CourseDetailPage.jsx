@@ -27,18 +27,15 @@ const CourseDetailPage = () => {
       await fetch(`http://localhost:8080/api/plans/${id}/topics/${index}/complete`, {
         method: 'PATCH',
       });
-  
-      // ✅ Optimistically update the local topic's completed status
+
       const updatedTopics = [...plan.topics];
       updatedTopics[index].completed = true;
-  
-      // ✅ Recalculate progress locally
+
       const completedCount = updatedTopics.filter(topic => topic.completed).length;
       const newProgress = Math.round((completedCount / updatedTopics.length) * 100);
-  
+
       setPlan(prev => ({ ...prev, topics: updatedTopics }));
       setProgress(newProgress);
-  
     } catch (err) {
       console.error("❌ Error marking topic complete:", err);
     }
@@ -58,21 +55,12 @@ const CourseDetailPage = () => {
     courseDescription,
     status,
     topics,
-    thumbnailUrl,
   } = plan;
 
   return (
     <>
       <Navbar />
       <div className="p-6 md:p-10 max-w-4xl mx-auto">
-        {/* Thumbnail */}
-        <div className="mb-6">
-          <img
-            src={thumbnailUrl || "https://via.placeholder.com/800x300.png?text=Course+Thumbnail"}
-            alt={title}
-            className="w-full h-64 object-cover rounded-lg shadow"
-          />
-        </div>
 
         {/* Title + Info */}
         <h1 className="text-3xl font-bold text-gray-800 mb-1">{title}</h1>
