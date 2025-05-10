@@ -520,4 +520,3 @@ const CommentItem = ({ comment, onDelete, onEdit }) => {
   );
 };
 
-
