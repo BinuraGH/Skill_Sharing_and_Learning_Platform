@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/comments/**").permitAll()
                 .requestMatchers("/api/plans/**").permitAll()
+                .requestMatchers("/api/follow/**").permitAll()
                 .requestMatchers("/api/progressupdates/**").permitAll()
                 .requestMatchers("/api/skill-sharing/**").permitAll()
                 .anyRequest().authenticated()
