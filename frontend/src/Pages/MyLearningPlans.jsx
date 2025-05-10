@@ -411,10 +411,31 @@ const ManagePlans = () => {
         <div className="flex justify-start mb-4">
           <button
             className="bg-purple-600 text-white px-5 py-2 rounded-md shadow hover:bg-purple-700 transition"
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setFormData({
+                userId: user?.id || '',
+                title: '',
+                description: '',
+                status: 'In Progress',
+                thumbnailUrl: '',
+                courseDescription: '',
+                updatedPlanId: '',
+                topics: [
+                  {
+                    title: '',
+                    description: '',
+                    completed: false,
+                    videoUrl: '',
+                  },
+                ],
+              });
+              setIsEditing(false);
+              setShowForm(true);
+            }}
           >
             📌 New Plan
           </button>
+
         </div>
 
         {showForm && (
