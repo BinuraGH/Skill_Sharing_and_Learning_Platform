@@ -25,4 +25,9 @@ public class NotificationController {
     public List<Notification> getNotifications(@PathVariable String userId) {
         return notificationService.getNotificationsForUser(userId);
     }
+
+    @PatchMapping("/{id}/read")
+    public Notification markAsRead(@PathVariable String id) {
+        return notificationService.markAsRead(id);
+    }
 }
