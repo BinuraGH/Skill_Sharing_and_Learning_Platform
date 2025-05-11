@@ -30,6 +30,3 @@ const ProgressTab = () => (
 );
 
 export default ProgressTab;
-
-
-
