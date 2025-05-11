@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const CreateProgressUpdate = () => {
+const LearningProgressForm = () => {
   const [userId, setUserId] = useState('');
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
@@ -11,8 +11,10 @@ const CreateProgressUpdate = () => {
     const progressUpdate = {
       userId,
       title,
+      status,
       caption,
       imgLink: imgLink.split(',').map(link => link.trim()),
+      likedBy: [],
     };
 
     try {
@@ -126,4 +128,4 @@ const CreateProgressUpdate = () => {
   );
 };
 
-export default CreateProgressUpdate;
+export default LearningProgressForm;
