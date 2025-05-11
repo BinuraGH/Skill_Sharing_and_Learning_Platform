@@ -44,7 +44,7 @@ const ProfilePage = () => {
             <div className="bg-white rounded-xl shadow p-6">
               <div className="flex flex-col items-center text-center">
                 <img
-                  src="https://randomuser.me/api/portraits/men/32.jpg"
+                  src={user?.profilePicture || "https://via.placeholder.com/150"}
                   alt="Avatar"
                   className="w-28 h-28 rounded-full border-4 border-white -mt-16 shadow-lg"
                 />

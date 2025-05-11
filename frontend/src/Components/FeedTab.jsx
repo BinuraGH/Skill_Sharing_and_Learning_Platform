@@ -261,7 +261,10 @@ const FeedTab = () => {
           <div key={post.id} className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
             {/* Header */}
             <div className="flex items-center space-x-3">
-              <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
+              <img
+                src={post.profilePicture || `https://i.pravatar.cc/150?u=${post.userId}`}
+                alt={post.uname}
+                className="w-10 h-10 rounded-full" />
               <div>
                 <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>

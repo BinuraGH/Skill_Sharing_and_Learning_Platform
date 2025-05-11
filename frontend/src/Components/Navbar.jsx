@@ -52,11 +52,12 @@ const Navbar = () => {
         <button className="icon-btn">📩</button>
 
         <button className="profile-pic" onClick={() => setDropdownOpen(!dropdownOpen)}>
-          <img
-            src="https://randomuser.me/api/portraits/men/75.jpg"
-            alt="My Profile"
-            className="profile-thumb small"
-          />
+        <img
+          src={user?.profilePicture || "https://via.placeholder.com/150"}
+          alt="My Profile"
+          className="profile-thumb small"
+        />
+
         </button>
 
         {/* Dropdown */}
