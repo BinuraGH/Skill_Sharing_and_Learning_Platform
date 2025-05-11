@@ -23,7 +23,6 @@ public class LearningPlanService {
 
     private final LearningPlanRepository repository;
     private final ModelMapper modelMapper;
-    private final NotificationService notificationService;
     private final FollowRepository followRepository;
 
     public LearningPlan createPlan(LearningPlanDto dto) {
@@ -51,14 +50,12 @@ public class LearningPlanService {
         if (existingPlan.isPresent()) {
             LearningPlan updatePlan = existingPlan.get();
 
-            // Validate that at least one field is being updated
             if (dto.getTitle() == null && dto.getDescription() == null &&
                 dto.getThumbnailUrl() == null && dto.getCourseDescription() == null &&
                 dto.getTopics() == null && dto.getPrice() == null && dto.getIsPaid() == null) {
                 return new ResponseEntity<>("No fields provided to update", HttpStatus.BAD_REQUEST);
             }
 
-            // Only update fields if not null
             if (dto.getTitle() != null) updatePlan.setTitle(dto.getTitle());
             if (dto.getDescription() != null) updatePlan.setDescription(dto.getDescription());
             if (dto.getThumbnailUrl() != null) updatePlan.setThumbnailUrl(dto.getThumbnailUrl());
@@ -73,24 +70,11 @@ public class LearningPlanService {
         }
     }
 
-    // public void deletePlan(String id, String requestingUserId) {
-    //     LearningPlan plan = repository.findById(id)
-    //             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found"));
-
-    //     if (!plan.getUserId().equals(requestingUserId)) {
-    //         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not authorized to delete this plan");
-    //     }
-
-    //     repository.deleteById(id);
-    // }
-
     public void deletePlan(String id) {
         LearningPlan plan = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found"));
-    
         repository.deleteById(id);
     }
-    //kkkkk
 
     public LearningPlan markTopicCompleted(String planId, int index) {
         LearningPlan plan = repository.findById(planId)
@@ -105,7 +89,6 @@ public class LearningPlanService {
         boolean allDone = plan.getTopics().stream().allMatch(Topic::isCompleted);
         if (allDone && !"Completed".equals(plan.getStatus())) {
             plan.setStatus("Completed");
-            notificationService.notifyPlanCompletion(plan.getUserId(), plan.getTitle());
         }
 
         return repository.save(plan);
@@ -131,8 +114,8 @@ public class LearningPlanService {
     public List<LearningPlan> getPlansByFollowedUsers(String userId) {
         List<Follow> follows = followRepository.findByFollowerId(userId);
         List<String> followedUserIds = follows.stream()
-            .map(Follow::getFollowedId)
-            .toList();
+                .map(Follow::getFollowedId)
+                .toList();
 
         if (followedUserIds.isEmpty()) {
             return List.of();
