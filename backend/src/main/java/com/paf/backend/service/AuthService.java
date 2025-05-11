@@ -152,6 +152,7 @@ public ResponseEntity<?> getAllUsers() {
             userMap.put("id", user.getId());
             userMap.put("name", user.getName());
             userMap.put("email", user.getEmail());
+            userMap.put("profilePicture", user.getProfilePicture());
             return userMap;
         })
         .collect(Collectors.toList());

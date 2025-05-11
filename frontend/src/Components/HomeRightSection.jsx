@@ -90,7 +90,7 @@ const HomeRightSection = () => {
                 <div className="suggested-item flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={`https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`}
+                      src={user.profilePicture ||`https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`}
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
