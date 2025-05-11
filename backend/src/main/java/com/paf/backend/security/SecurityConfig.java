@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/follow/**").permitAll()
                         .requestMatchers("/api/progressupdates/**").permitAll()
                         .requestMatchers("/api/skill-sharing/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
