@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../Components/Navbar';
-import PlanCard from '../Components/PlanCard';
 import LearningPlanForm from '../Components/LearningPlanForm';
-import '../styles/ManagePlans.css';
+import LearningPlansTab from '../Components/LearningPlansTab';
+import ProgressUpdatesTab from '../Components/ProgressUpdatesTab';
+
 
 const ManagePlans = () => {
   const [activeTab, setActiveTab] = useState('plans');
@@ -15,8 +16,7 @@ const ManagePlans = () => {
     thumbnailUrl: '', courseDescription: '', updatedPlanId: '',
     topics: [{ title: '', description: '', completed: false, videoUrl: '' }],
   });
-
-  const [deleteTarget, setDeleteTarget] = useState(null); // ✳️ For modal
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     const fetchUserAndPlans = async () => {
@@ -73,7 +73,7 @@ const ManagePlans = () => {
       method: 'DELETE',
     });
     if (res.ok) await fetchPlans(formData.userId);
-    setDeleteTarget(null); // Close modal
+    setDeleteTarget(null);
   };
 
   return (
@@ -87,18 +87,6 @@ const ManagePlans = () => {
             <button className={`px-4 py-2 rounded-l-md font-medium ${activeTab === 'plans' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600'}`} onClick={() => setActiveTab('plans')}>Learning Plans</button>
             <button className={`px-4 py-2 rounded-r-md font-medium ${activeTab === 'progress' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600'}`} onClick={() => setActiveTab('progress')}>Progress Updates</button>
           </div>
-        </div>
-
-        <div className="flex justify-start mb-4">
-          <button className="bg-purple-600 text-white px-5 py-2 rounded-md shadow hover:bg-purple-700 transition" onClick={() => {
-            setFormData({
-              userId: user?.id || '', title: '', description: '', status: 'In Progress',
-              thumbnailUrl: '', courseDescription: '', updatedPlanId: '',
-              topics: [{ title: '', description: '', completed: false, videoUrl: '' }],
-            });
-            setIsEditing(false);
-            setShowForm(true);
-          }}>📌 New Plan</button>
         </div>
 
         {showForm && (
@@ -115,20 +103,21 @@ const ManagePlans = () => {
           />
         )}
 
-        <h3 className="text-xl font-semibold text-gray-700 mt-6 mb-4">My Learning Plans</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-6 justify-items-center">
-        {plans.map((plan) => (
-            <PlanCard
-              key={plan._id}
-              plan={plan}
-              onEdit={() => handleEditPlan(plan)}
-              onDelete={() => setDeleteTarget(plan._id || plan.id)}
-            />
-          ))}
-        </div>
+        {activeTab === 'plans' ? (
+          <LearningPlansTab
+            user={user}
+            plans={plans}
+            setFormData={setFormData}
+            setIsEditing={setIsEditing}
+            setShowForm={setShowForm}
+            handleEditPlan={handleEditPlan}
+            setDeleteTarget={setDeleteTarget}
+          />
+        ) : (
+          <ProgressUpdatesTab />
+        )}
       </div>
 
-      {/* ✳️ Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-96">
