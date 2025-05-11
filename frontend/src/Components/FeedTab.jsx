@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { FaChevronDown, FaChevronUp, FaPhotoVideo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import SkillShareForm from './SkillShareForm';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -13,35 +13,33 @@ const FeedTab = () => {
   const [liked, setLiked] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [user, setUser] = useState(null); // State to store logged-in user's data
-  const [expanded, setExpanded] = useState(false);
-  const [description, setDescription] = useState("");
-  const [mediaFiles, setMediaFiles] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryItems, setGalleryItems] = useState([]);
 
-     useEffect(() => {
-      const fetchUser = async () => {
-        try {
-          const res = await axios.get('http://localhost:8080/api/auth/me', {
-            withCredentials: true, // Important for session-based auth!
-          });
-          setUser(res.data);
-          console.log("Data dee", res.data);
-        } catch (err) {
-          console.error('Failed to fetch user:', err);
-        }
-      };
-  
-      fetchUser();
-    }, []);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          withCredentials: true, // Important for session-based auth!
+        });
+        setUser(res.data);
+        console.log("Data dee", res.data);
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`http://localhost:8080/api/comments/post/${postId}`);
-        setPostComments(prev => ({
-          ...prev,
-          [postId]: res.data
-    }));
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: res.data
+      }));
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -58,13 +56,13 @@ const FeedTab = () => {
         userId: user?.id,
         userName: user?.name,  // ✅ pass this to backend
         postId: postId,
-      };      const res = await axios.post('http://localhost:8080/api/comments', commentData);
+      }; const res = await axios.post('http://localhost:8080/api/comments', commentData);
       console.log('Comment added:', res.data);
 
       setPostComments(prev => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), res.data]
-    }));
+        ...prev,
+        [postId]: [...(prev[postId] || []), res.data]
+      }));
 
       setNewComment(prev => ({ ...prev, [postId]: '' }));
     } catch (error) {
@@ -75,121 +73,85 @@ const FeedTab = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
-  try {
-    await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
+    try {
+      await axios.delete(`http://localhost:8080/api/comments/${commentId}`);
 
-    // Find the post that contains this comment
-    setPostComments(prevComments => {
-      const updatedComments = { ...prevComments };
+      // Find the post that contains this comment
+      setPostComments(prevComments => {
+        const updatedComments = { ...prevComments };
 
-      for (const postId in updatedComments) {
-        const commentList = updatedComments[postId];
-        if (Array.isArray(commentList)) {
-          updatedComments[postId] = commentList.filter(c => c.id !== commentId);
+        for (const postId in updatedComments) {
+          const commentList = updatedComments[postId];
+          if (Array.isArray(commentList)) {
+            updatedComments[postId] = commentList.filter(c => c.id !== commentId);
+          }
         }
-      }
 
-      return updatedComments;
-    });
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-  }
-};
+        return updatedComments;
+      });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
 
   const navigate = useNavigate();
 
-const handleEditComment = async (commentId, newText) => {
-  if (!newText.trim()) return;
+  const handleEditComment = async (commentId, newText) => {
+    if (!newText.trim()) return;
 
-  try {
-    const updatedComment = { text: newText };
-    const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
+    try {
+      const updatedComment = { text: newText };
+      const res = await axios.put(`http://localhost:8080/api/comments/${commentId}`, updatedComment);
 
-    // Find the postId that contains this comment
-    setPostComments(prev => {
-      const updated = { ...prev };
+      // Find the postId that contains this comment
+      setPostComments(prev => {
+        const updated = { ...prev };
 
-      for (const postId in updated) {
-        updated[postId] = updated[postId].map(c =>
-          c.id === commentId ? res.data : c
-        );
-      }
+        for (const postId in updated) {
+          updated[postId] = updated[postId].map(c =>
+            c.id === commentId ? res.data : c
+          );
+        }
 
-      return updated;
-    });
+        return updated;
+      });
 
-  } catch (error) {
-    console.error('Error editing comment:', error);
-  }
-};
+    } catch (error) {
+      console.error('Error editing comment:', error);
+    }
+  };
 
 
   const handleLikeClick = () => {
     setLiked(!liked);
   };
 
-  const toggleExpand = () => setExpanded(prev => !prev);
 
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 3) {
-      toast.warn("You can upload up to 3 media files.");
-      return;
-    }
-    setMediaFiles(selectedFiles);
-  };
-
-  const handlePost = async () => {
-    if (!description.trim()) {
-      toast.error("Description is required.");
-      return;
-    }
-
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append("userId", user?.id);
-    formData.append("description", description);
-    mediaFiles.forEach(file => formData.append("media", file));
-
-    try {
-      await axios.post("http://localhost:8080/api/skill-sharing", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-
-      toast.success("Post uploaded successfully!");
-      setDescription("");
-      setMediaFiles([]);
-      setExpanded(false);
-      fetchPosts();
-    } catch (error) {
-      toast.error("Failed to upload post.");
-      console.error("Upload error:", error.response?.data || error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  //Vanuja
   const fetchPosts = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/skill-sharing");
       const postList = res.data.reverse();
       setPosts(postList);
-      
+
       // 👇 Fetch comments for all posts once when posts are loaded
       postList.forEach(post => {
         fetchComments(post.id);  // ✅ Ensure `post.id` is used consistently
       });
-  
+
     } catch (err) {
       console.error("Fetch posts error:", err);
     }
   };
-  
 
+
+  //Vanuja
   useEffect(() => {
     fetchPosts();
   }, []);
 
+
+  //Vanuja
   const timeAgo = (date) => {
     const now = new Date();
     const createdDate = new Date(date);
@@ -216,28 +178,39 @@ const handleEditComment = async (commentId, newText) => {
 
     const isVideo = (url) => url.includes(".mp4") || url.includes("video");
 
-    const renderMedia = (url, idx) => (
-      isVideo(url) ? (
+    const renderMedia = (url, idx) => {
+      const handleClick = () => {
+        const items = media.map(m => ({
+          original: m,
+          thumbnail: m
+        }));
+        setGalleryItems(items);
+        setShowGallery(true);
+      };
+
+      return isVideo(url) ? (
         <video
           key={idx}
           src={url}
           controls
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
       ) : (
         <img
           key={idx}
           src={url}
           alt={`media-${idx}`}
-          className="w-full h-full object-cover rounded"
+          onClick={handleClick}
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
-      )
-    );
+      );
+    };
+
 
     const count = media.length;
 
     return (
-      <div className="w-full h-80 rounded overflow-hidden">
+      <div className="w-full h-150 rounded ">
         {count === 1 && (
           <div className="w-full h-full">
             {renderMedia(media[0], 0)}
@@ -252,7 +225,7 @@ const handleEditComment = async (commentId, newText) => {
         )}
 
         {count === 3 && (
-          <div className="grid grid-rows-[2fr_1fr] gap-1 h-full">
+          <div className="grid grid-rows-2 gap-1 h-80">
             <div className="w-full h-full">
               {renderMedia(media[0], 0)}
             </div>
@@ -269,87 +242,7 @@ const handleEditComment = async (commentId, newText) => {
 
   return (
     <div className="tab-content p-4">
-      <ToastContainer position="top-right" autoClose={3000} />
-      {/* Post creation */}
-      <div className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
-        <div
-          onClick={toggleExpand}
-          className="text-xl font-semibold text-gray-800 flex items-center justify-between cursor-pointer"
-        >
-          <span>Add a Post</span>
-          <span className="text-gray-600">
-            {expanded ? <FaChevronUp size={20} /> : <FaChevronDown size={20} />}
-          </span>
-        </div>
-
-        {expanded && (
-          <>
-            <textarea
-              placeholder="Describe your post…"
-              className="w-full border border-gray-300 rounded px-3 py-2 resize-none"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
-              <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded cursor-pointer hover:bg-gray-200">
-                <span>Add Media Files</span>
-                <FaPhotoVideo />
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </label>
-              {mediaFiles.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                  {mediaFiles.map((file, idx) => {
-                    const url = URL.createObjectURL(file);
-                    const isVideo = file.type.includes("video");
-
-                    return isVideo ? (
-                      <video
-                        key={idx}
-                        src={url}
-                        controls
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      <img
-                        key={idx}
-                        src={url}
-                        alt={`preview-${idx}`}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <button
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded self-end flex items-center gap-2 disabled:opacity-60"
-              onClick={handlePost}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z"></path>
-                  </svg>
-                  Posting...
-                </>
-              ) : (
-                "Post"
-              )}
-            </button>
-          </>
-        )}
-
-      </div>
+      <SkillShareForm onPostSuccess={fetchPosts} />
       <button
         className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-center font-medium"
         style={{ width: '160px', alignSelf: 'flex-end' }}
@@ -358,7 +251,7 @@ const handleEditComment = async (commentId, newText) => {
         Manage Posts
       </button>
 
-
+      {/* Post list - vanuja */}
       {posts.length === 0 ? (
         <div className="text-center text-gray-500 text-lg font-medium mt-10">
           No posts yet 💤
@@ -370,7 +263,7 @@ const handleEditComment = async (commentId, newText) => {
             <div className="flex items-center space-x-3">
               <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800">{post.userId}</div>
+                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>
@@ -382,6 +275,7 @@ const handleEditComment = async (commentId, newText) => {
             {/* Description */}
             <p className="text-gray-700">{post.description}</p>
 
+            {/* Comments & likes -Thejani */}
             <div className="post-footer flex items-center gap-6 mb-4">
               <span
                 className="cursor-pointer text-xl"
@@ -390,36 +284,36 @@ const handleEditComment = async (commentId, newText) => {
                 {liked ? "💜 Liked" : "🤍 Like"}
               </span>
               <span
-              onClick={() => {
-                const postId = post.id || post._id;
-                setShowComments((prev) => ({
-                  ...prev,
-                  [postId]: !prev[postId],
-                }));
-                fetchComments(postId);
-                
-              }}
-              className="cursor-pointer text-xl"
-            >
-              💬{" "}
-              {showComments[post.id]
-                ? `Hide ${postComments[post.id]?.length || 0} Comments`
-                : `View ${postComments[post.id]?.length || 0} Comments`}
-            </span>
+                onClick={() => {
+                  const postId = post.id || post._id;
+                  setShowComments((prev) => ({
+                    ...prev,
+                    [postId]: !prev[postId],
+                  }));
+                  fetchComments(postId);
+
+                }}
+                className="cursor-pointer text-xl"
+              >
+                💬{" "}
+                {showComments[post.id]
+                  ? `Hide ${postComments[post.id]?.length || 0} Comments`
+                  : `View ${postComments[post.id]?.length || 0} Comments`}
+              </span>
             </div>
 
             {/* Comments Section */}
             {showComments[post.id] && (
               <>
                 <div className="comments mt-4 space-y-3">
-                  {(postComments[post.id] || []).map((comment) =>  (
+                  {(postComments[post.id] || []).map((comment) => (
                     <CommentItem
-                    key={comment.id}
-                    comment={comment}
-                    onDelete={handleDeleteComment}
-                    onEdit={handleEditComment}
-                  />
-                  
+                      key={comment.id}
+                      comment={comment}
+                      onDelete={handleDeleteComment}
+                      onEdit={handleEditComment}
+                    />
+
                   ))}
                 </div>
 
@@ -446,6 +340,25 @@ const handleEditComment = async (commentId, newText) => {
             )}
           </div>
         )))}
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-full max-w-3xl relative p-5">
+            <button
+              className="absolute top-2 right-2 text-gray-700 text-lg font-bold"
+              onClick={() => setShowGallery(false)}
+            >
+              &times;
+            </button>
+            <ImageGallery
+              items={galleryItems}
+              showThumbnails={true}
+              showFullscreenButton={false}
+              showPlayButton={false}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -30,7 +30,8 @@
   gap: 15px;
 }
 
-.icon-btn, .profile-pic {
+.icon-btn,
+.profile-pic {
   background: none;
   border: none;
   font-size: 18px;

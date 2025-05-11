@@ -49,3 +49,4 @@ build/
 
 ## Maven
 pom.xml
+/src/main/resources/firebase/firebase-key.json
