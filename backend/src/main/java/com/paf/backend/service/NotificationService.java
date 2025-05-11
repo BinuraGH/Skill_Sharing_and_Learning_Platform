@@ -28,4 +28,11 @@ public class NotificationService {
     public List<Notification> getNotificationsForUser(String userId) {
         return repository.findByUserIdOrderByTimestampDesc(userId);
     }
+
+    public Notification markAsRead(String id) {
+        Notification notification = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notification not found"));
+        notification.setRead(true);
+        return repository.save(notification);
+    }
 }
