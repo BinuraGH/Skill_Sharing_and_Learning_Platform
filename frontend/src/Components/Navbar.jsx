@@ -1,87 +1,109 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Home.css';
-import axios from 'axios';
+  import React, { useState, useEffect, useRef } from 'react';
+  import { Link, useNavigate } from 'react-router-dom';
+  import axios from 'axios';
+  import { FiSearch, FiHome, FiBookOpen, FiBell, FiMessageSquare } from 'react-icons/fi';
 
+  const Navbar = () => {
+    const [user, setUser] = useState(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const navigate = useNavigate();
 
-const Navbar = () => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const [user, setUser] = useState(null);
+    useEffect(() => {
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get('http://localhost:8080/api/auth/me', {
+            withCredentials: true,
+          });
+          setUser(res.data);
+        } catch (err) {
+          console.error('Error fetching user:', err);
+        }
+      };
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get('http://localhost:8080/api/auth/me', {
-          withCredentials: true, // Important for session-based auth!
-        });
-        setUser(res.data);
-        console.log("Data dee", res.data);
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
-      }
-    };
+      fetchUser();
+    }, []);
 
-    fetchUser();
-  }, []);
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+          setDropdownOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    return (
+      <nav className="w-full bg-white border-b px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-50">
+        {/* Logo */}
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/Home')}>
+          <FiBookOpen className="text-purple-600 text-2xl hover:scale-110 transition-transform duration-150" />
+          <span className="text-xl font-semibold text-purple-600">CodeShare</span>
+        </div>
 
-  const navigate = useNavigate();
-
-  return (
-    <nav className="nav-bar relative">
-      <h2 className="logo" style={{ cursor: 'pointer' }} onClick={() => navigate('/Home')}>CodeShare</h2>
-      <input
-        className="search-input"
-        type="text"
-        placeholder="Search developers, skills, topics..."
-      />
-      <div className="nav-icons" ref={dropdownRef}>
-        <button className="icon-btn">🏠</button>
-        <button className="icon-btn">🔔</button>
-        <button className="icon-btn">📩</button>
-
-        <button className="profile-pic" onClick={() => setDropdownOpen(!dropdownOpen)}>
-          <img
-            src="https://randomuser.me/api/portraits/men/75.jpg"
-            alt="My Profile"
-            className="profile-thumb small"
+        {/* Search Bar */}
+        <div className="relative w-1/3">
+          <input
+            type="text"
+            placeholder="Search developers, skills, topics..."
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm transition-shadow hover:shadow-sm"
           />
-        </button>
+          <FiSearch className="absolute left-3 top-2.5 text-gray-500 text-lg" />
+        </div>
 
-        {/* Dropdown */}
-        {dropdownOpen && (
-          <div className="absolute right-5 top-16 w-48 bg-white shadow-lg border rounded-md z-50">
-            <div className="p-4 border-b">
-              <p className="font-semibold text-sm">{user?.name}</p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+        {/* Icons & Profile */}
+        <div className="flex items-center gap-5" ref={dropdownRef}>
+          {[{ icon: FiHome, path: '/Home' }, { icon: FiBell }, { icon: FiMessageSquare }].map(({ icon: Icon, path }, idx) => (
+            <div
+              key={idx}
+              onClick={() => path && navigate(path)}
+              className="relative group p-2 rounded-md cursor-pointer transition duration-200 hover:bg-purple-100 hover:shadow-md"
+            >
+              <div className="absolute inset-0 border-2 border-purple-500 opacity-0 group-hover:opacity-100 rounded-md scale-95 group-hover:scale-100 transition-all duration-200 pointer-events-none"></div>
+              <Icon className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
             </div>
-            <ul className="text-sm">
-              <li>
-                <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
-              </li>
-              <li>
-                <a href="/editprofile" className="block px-4 py-2 hover:bg-gray-100">Edit Profile</a>
-              </li>
-              <li>
-                <a href="#" className="block px-4 py-2 text-red-500 hover:bg-gray-100">Log out</a>
-              </li>
-            </ul>
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-};
+          ))}
 
-export default Navbar;
+
+          {/* Profile Image */}
+          <div className="relative">
+            <img
+              src={user?.profilePicture || 'https://via.placeholder.com/150'}
+              alt="Profile"
+              className="w-9 h-9 rounded-full border cursor-pointer transition duration-200 hover:ring-2 hover:ring-purple-400"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            />
+            {/* Dropdown */}
+            {dropdownOpen && (
+              <div className="absolute right-0 top-12 w-56 bg-white border rounded-md shadow-md z-50 animate-fade-slide">
+                <div className="p-4 border-b text-sm">
+                  <p className="font-medium">{user?.name}</p>
+                  <p className="text-gray-500">{user?.email}</p>
+                </div>
+                <ul className="text-sm">
+                  <li>
+                    <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100 transition duration-150">
+                      Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/editprofile" className="block px-4 py-2 hover:bg-gray-100 transition duration-150">
+                      Edit Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <button className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition duration-150">
+                      Log out
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+    );
+  };
+
+  export default Navbar;

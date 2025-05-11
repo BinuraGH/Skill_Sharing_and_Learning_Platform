@@ -146,7 +146,7 @@ const ShowUserPosts = () => {
                     {/* Header */}
                     <div className="flex justify-between items-center mt-2">
                         <div className="flex items-center space-x-3">
-                            <img src={`https://randomuser.me/api/portraits/men/75.jpg`} alt="User" className="w-10 h-10 rounded-full" />
+                            <img src={user.profilePicture} alt="User" className="w-10 h-10 rounded-full" />
                             <div>
                                 <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                                 <div className="text-sm text-gray-500">Skill Share</div>
