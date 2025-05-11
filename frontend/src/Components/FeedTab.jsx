@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SkillShareForm from './SkillShareForm';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
+import { FaPenAlt, FaTrash } from 'react-icons/fa';
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -421,13 +422,13 @@ const CommentItem = ({ comment, onDelete, onEdit }) => {
             onClick={() => setIsEditing(true)}
             className="text-blue-500 hover:text-blue-700 text-sm"
           >
-            ✏️
+            <FaPenAlt />
           </button>
           <button
             onClick={async () => await onDelete(comment.id)}
             className="text-red-500 hover:text-red-700 text-sm"
           >
-            🗑️
+            <FaTrash />
           </button>
 
         </div>
