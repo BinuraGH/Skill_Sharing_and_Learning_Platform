@@ -21,4 +21,5 @@ public class UserDto {
 
     @NotBlank(message = "Password is required")
     private String password;
+    
 }

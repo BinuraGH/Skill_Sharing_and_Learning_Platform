@@ -72,7 +72,10 @@ public class AuthService {
                         user.getId(),
                         user.getName(),
                         user.getEmail(),
-                        user.getRole());
+                        user.getRole(),
+                        user.getProfilePicture()
+                        );
+                        
                 return ResponseEntity.ok(response);
             }
         }
@@ -82,7 +85,8 @@ public class AuthService {
             OAuth2User oauthUser = oauthToken.getPrincipal();
             String email = oauthUser.getAttribute("email");
             String name = oauthUser.getAttribute("name");
-
+            String picture = oauthUser.getAttribute("picture");
+            
             // ✅ Optional: If your DB has Google users too, you can fetch ID/role
             Optional<User> userOptional = userRepository.findByEmail(email);
             if (userOptional.isPresent()) {
@@ -91,7 +95,9 @@ public class AuthService {
                         user.getId(),
                         user.getName(),
                         user.getEmail(),
-                        user.getRole());
+                        user.getRole(),
+                        user.getProfilePicture()
+                        );
                 return ResponseEntity.ok(response);
             }
 
@@ -99,7 +105,9 @@ public class AuthService {
             return ResponseEntity.ok(Map.of(
                     "name", name,
                     "email", email,
-                    "role", "OAUTH_USER"));
+                    "role", "OAUTH_USER",
+                    "profilePicture", picture
+                    ));
         }
 
         // ❌ Invalid session or unknown auth method

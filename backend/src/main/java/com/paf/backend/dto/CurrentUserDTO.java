@@ -12,4 +12,6 @@ public class CurrentUserDTO {
     private String name;
     private String email;
     private String role;
+    private String profilePicture;
+
 }
