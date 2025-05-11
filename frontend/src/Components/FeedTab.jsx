@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import SkillShareForm from './SkillShareForm';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -12,6 +14,8 @@ const FeedTab = () => {
   const [isPosting, setIsPosting] = useState(false);
   const [user, setUser] = useState(null); // State to store logged-in user's data
   const [posts, setPosts] = useState([]);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryItems, setGalleryItems] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -174,28 +178,39 @@ const FeedTab = () => {
 
     const isVideo = (url) => url.includes(".mp4") || url.includes("video");
 
-    const renderMedia = (url, idx) => (
-      isVideo(url) ? (
+    const renderMedia = (url, idx) => {
+      const handleClick = () => {
+        const items = media.map(m => ({
+          original: m,
+          thumbnail: m
+        }));
+        setGalleryItems(items);
+        setShowGallery(true);
+      };
+
+      return isVideo(url) ? (
         <video
           key={idx}
           src={url}
           controls
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
       ) : (
         <img
           key={idx}
           src={url}
           alt={`media-${idx}`}
-          className="w-full h-full object-cover rounded"
+          onClick={handleClick}
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
-      )
-    );
+      );
+    };
+
 
     const count = media.length;
 
     return (
-      <div className="w-full h-80 rounded overflow-hidden">
+      <div className="w-full h-150 rounded ">
         {count === 1 && (
           <div className="w-full h-full">
             {renderMedia(media[0], 0)}
@@ -210,7 +225,7 @@ const FeedTab = () => {
         )}
 
         {count === 3 && (
-          <div className="grid grid-rows-[2fr_1fr] gap-1 h-full">
+          <div className="grid grid-rows-2 gap-1 h-80">
             <div className="w-full h-full">
               {renderMedia(media[0], 0)}
             </div>
@@ -248,7 +263,7 @@ const FeedTab = () => {
             <div className="flex items-center space-x-3">
               <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800">{post.uname}</div>
+                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>
@@ -325,6 +340,25 @@ const FeedTab = () => {
             )}
           </div>
         )))}
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-full max-w-3xl relative p-5">
+            <button
+              className="absolute top-2 right-2 text-gray-700 text-lg font-bold"
+              onClick={() => setShowGallery(false)}
+            >
+              &times;
+            </button>
+            <ImageGallery
+              items={galleryItems}
+              showThumbnails={true}
+              showFullscreenButton={false}
+              showPlayButton={false}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
