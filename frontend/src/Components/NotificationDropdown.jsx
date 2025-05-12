@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FiUserPlus, FiMessageSquare } from 'react-icons/fi';
 
-const NotificationDropdown = ({ notifications }) => {
+const NotificationDropdown = ({ notifications, timeAgo }) => {
   const [showAll, setShowAll] = useState(false);
   const visibleNotifications = showAll ? notifications : notifications.slice(0, 5);
 
@@ -37,7 +37,7 @@ const NotificationDropdown = ({ notifications }) => {
               <div className="ml-3 text-sm">
                 <p className="text-gray-700">{n.message}</p>
                 <p className="text-gray-400 text-xs mt-1">
-                  {new Date(n.timestamp).toLocaleString()}
+                  {timeAgo(n.timestamp)}
                 </p>
               </div>
             </li>
