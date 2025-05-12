@@ -49,3 +49,5 @@ build/
 
 ## Maven
 pom.xml
+
+/backend/src/main/resources/firebase/
