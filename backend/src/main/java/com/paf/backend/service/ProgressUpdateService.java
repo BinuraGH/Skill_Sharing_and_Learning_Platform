@@ -25,8 +25,7 @@ public class ProgressUpdateService {
                 dto.getTitle(),
                 dto.getCaption(),
                 "In Progress",  // default status
-                dto.getImgLink(),
-                dto.getLikedBy()
+                dto.getImgLink()
         );
 
         ProgressUpdate saved = repository.save(progress);
@@ -51,15 +50,13 @@ public class ProgressUpdateService {
         if (existingUpdate.isPresent()) {
             ProgressUpdate updateProgress = existingUpdate.get();
 
-            if (dto.getTitle() == null && dto.getCaption() == null &&
-                dto.getLikedBy() == null && dto.getImgLink() == null) {
+            if (dto.getTitle() == null && dto.getCaption() == null && dto.getImgLink() == null) {
                 return new ResponseEntity<>("No fields provided to update", HttpStatus.BAD_REQUEST);
             }
 
             if (dto.getTitle() != null) updateProgress.setTitle(dto.getTitle());
             if (dto.getCaption() != null) updateProgress.setCaption(dto.getCaption());
             if (dto.getImgLink() != null) updateProgress.setImgLink(dto.getImgLink());
-            if (dto.getLikedBy() != null) updateProgress.setLikedBy(dto.getLikedBy());
 
             return new ResponseEntity<>(repository.save(updateProgress), HttpStatus.OK);
         } else {
