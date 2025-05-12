@@ -18,17 +18,15 @@ public class ProgressUpdate {
     private String status;
 
     private List<String> imgLink;
-    private List<String> likedBy;
 
     public ProgressUpdate(){}
 
-    public ProgressUpdate(String userId, String title, String caption, String status, List<String> imgLink, List<String> likedBy){
+    public ProgressUpdate(String userId, String title, String caption, String status, List<String> imgLink){
         this.userId = userId;
         this.title = title;
         this.caption = caption;
         this.status = status;
         this.imgLink = imgLink;
-        this.likedBy = likedBy;
     }
 
     public String getId(){
@@ -55,10 +53,6 @@ public class ProgressUpdate {
         return imgLink;
     }
 
-    public List<String> getLikedBy(){
-        return likedBy;
-    }
-
     public void setId(String id){
         this.id = id;
     }
@@ -81,10 +75,6 @@ public class ProgressUpdate {
 
     public void setImgLink(List<String> imgLink){
         this.imgLink = imgLink;
-    }
-
-    public void setLikedBy(List<String> likedBy){
-        this.likedBy = likedBy;
     }
 
     public void setDateTime(LocalDateTime now) {
