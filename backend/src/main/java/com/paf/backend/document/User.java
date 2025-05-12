@@ -13,6 +13,8 @@ public class User {
     private String email;
     private String password;
     private String role;
+    private String profilePicture;
+
 
     // Getters and setters
     public String getId() { return id; }
@@ -29,5 +31,9 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getProfilePicture() {return profilePicture;    }
+    
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture;  }
 }
 

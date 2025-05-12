@@ -16,6 +16,7 @@ public class SkillSharing {
     private List<String> media; // Size limit will be handled in validation
     private String description;
     private LocalDateTime dateTime;
+    private String profilePicture;
 
     public SkillSharing() {
     }
@@ -26,6 +27,7 @@ public class SkillSharing {
         this.media = media;
         this.description = description;
         this.dateTime = dateTime;
+        
     }
 
     public String getId() {
@@ -74,5 +76,11 @@ public class SkillSharing {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

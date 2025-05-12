@@ -19,6 +19,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
@@ -26,15 +27,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
+        String picture = oAuth2User.getAttribute("picture");
+
 
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(name);
             newUser.setRole("USER");
+            newUser.setProfilePicture(picture);
             return userRepository.save(newUser);
         });
-
+        // ✅ update profile picture if changed
+        if (user.getProfilePicture() == null || !user.getProfilePicture().equals(picture)) {
+            user.setProfilePicture(picture);
+            userRepository.save(user);
+        }
         return new DefaultOAuth2User(
             Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole())),
             oAuth2User.getAttributes(),

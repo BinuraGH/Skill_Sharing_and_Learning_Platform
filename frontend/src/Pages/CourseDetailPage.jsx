@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../Components/Navbar";
+import { FaCheckCircle } from "react-icons/fa";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
@@ -41,79 +42,91 @@ const CourseDetailPage = () => {
     }
   };
 
-  if (!plan || !plan.topics) {
+  if (!plan) {
     return (
       <>
         <Navbar />
-        <div className="p-8 text-gray-600 text-center text-lg">Loading course details...</div>
+        <div className="p-8 text-center text-gray-600 text-lg">Loading course details...</div>
       </>
     );
   }
 
-  const {
-    title,
-    courseDescription,
-    status,
-    topics,
-  } = plan;
+  const { title, courseDescription, status, topics } = plan;
 
   return (
     <>
       <Navbar />
-      <div className="p-6 md:p-10 max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-1">{title}</h1>
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <span className="capitalize">Status: {status}</span>
+            <span>{progress}% Completed</span>
+          </div>
 
-        {/* Title + Info */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-1">{title}</h1>
-        <p className="text-sm text-gray-500 mb-4">{status}</p>
-        <p className="text-gray-700 mb-4">{courseDescription || "No course description provided."}</p>
+          <div className="relative w-full h-5 bg-gray-200 rounded-full mt-4 overflow-hidden">
+            <div
+              className={`
+                h-full rounded-full transition-all duration-500
+                ${progress < 50 ? 'bg-red-400' : progress < 80 ? 'bg-yellow-400' : 'bg-green-500'}
+              `}
+              style={{ width: `${progress}%` }}
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-white">
+              {progress}%
+            </span>
+          </div>
 
-        {/* Progress Bar */}
-        <div className="relative w-full h-3 bg-gray-300 rounded-full overflow-hidden mb-2">
-          <div
-            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            {courseDescription || "No course description provided."}
+          </p>
         </div>
-        <p className="text-xs text-gray-600 text-right mb-6">{progress}% completed</p>
 
         {/* Course Content */}
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Course Content</h2>
+        <section>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Course Content</h2>
 
-        <div className="space-y-6">
-          {topics.map((topic, index) => (
-            <div key={index} className="border rounded-lg bg-white p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">{topic.title || "Untitled Topic"}</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                {topic.description || "No description available for this topic."}
-              </p>
-
-              {topic.videoUrl ? (
-                <div className="mb-3">
-                  <iframe
-                    className="w-full h-56 rounded"
-                    src={topic.videoUrl}
-                    title={topic.title}
-                    allowFullScreen
-                  />
+          <div className="space-y-6">
+            {topics.map((topic, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">{topic.title || "Untitled Topic"}</h3>
+                    <p className="text-sm text-gray-500">{topic.description || "No description available."}</p>
+                  </div>
+                  {topic.completed && (
+                    <span className="inline-flex items-center text-green-600 font-medium text-sm">
+                      <FaCheckCircle className="mr-1" /> Completed
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm italic text-gray-400 mb-3">No video available.</p>
-              )}
 
-              <button
-                onClick={() => handleMarkComplete(index)}
-                className={`px-4 py-2 text-sm font-semibold rounded shadow-sm transition-all duration-200 ${
-                  topic.completed
-                    ? 'bg-green-500 text-white cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-                disabled={topic.completed}
-              >
-                {topic.completed ? "Completed" : "Mark as Completed"}
-              </button>
-            </div>
-          ))}
-        </div>
+                {topic.videoUrl ? (
+                  <div className="overflow-hidden rounded-lg mb-4">
+                    <iframe
+                      src={topic.videoUrl}
+                      title={topic.title}
+                      allowFullScreen
+                      className="w-full h-56 md:h-64 rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm italic text-gray-400 mb-4">No video available.</p>
+                )}
+
+                {!topic.completed && (
+                  <button
+                    onClick={() => handleMarkComplete(index)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition"
+                  >
+                    Mark as Completed
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </>
   );

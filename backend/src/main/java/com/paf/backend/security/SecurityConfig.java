@@ -27,27 +27,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors() // Enable CORS support
-            .and()
-            .csrf().disable()
-            .sessionManagement()
+                .cors() // Enable CORS support
+                .and()
+                .csrf().disable()
+                .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 🔹 Add this here
-            .and()
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/signup", "/api/auth/login","/api/auth/all-users").permitAll()
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                .requestMatchers("/api/comments/**").permitAll()
-                .requestMatchers("/api/plans/**").permitAll()
-                .requestMatchers("/api/follow/**").permitAll()
-                .requestMatchers("/api/progressupdates/**").permitAll()
-                .requestMatchers("/api/skill-sharing/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth -> oauth
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService))
-                .defaultSuccessUrl("http://localhost:3000/Home", true)
-            );
+                .and()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/all-users").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/comments/**").permitAll()
+                        .requestMatchers("/api/plans/**").permitAll()
+                        .requestMatchers("/api/follow/**").permitAll()
+                        .requestMatchers("/api/progressupdates/**").permitAll()
+                        .requestMatchers("/api/skill-sharing/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .defaultSuccessUrl("http://localhost:3000/Home", true));
         return http.build();
     }
 
