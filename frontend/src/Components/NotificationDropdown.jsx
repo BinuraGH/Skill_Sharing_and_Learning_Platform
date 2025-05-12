@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FiUserPlus, FiMessageSquare } from 'react-icons/fi';
 
 const NotificationDropdown = ({ notifications }) => {
   const [showAll, setShowAll] = useState(false);
@@ -13,10 +14,26 @@ const NotificationDropdown = ({ notifications }) => {
       <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100">
         {visibleNotifications.length > 0 ? (
           visibleNotifications.map((n) => (
-            <li key={n.id} className="flex items-start px-4 py-3 hover:bg-gray-50 transition">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
-                {n.message[0]}
+            <li
+              key={n.id}
+              className={`flex items-start px-4 py-3 transition ${
+                !n.isRead ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'
+              }`}
+            >
+              {/* Icon based on type */}
+              <div
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white ${
+                  n.type === 'follow' ? 'bg-blue-500' : 'bg-purple-500'
+                }`}
+              >
+                {n.type === 'follow' ? (
+                  <FiUserPlus className="text-lg" />
+                ) : (
+                  <FiMessageSquare className="text-lg" />
+                )}
               </div>
+
+              {/* Message & Time */}
               <div className="ml-3 text-sm">
                 <p className="text-gray-700">{n.message}</p>
                 <p className="text-gray-400 text-xs mt-1">

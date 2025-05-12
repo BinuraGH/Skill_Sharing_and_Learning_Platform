@@ -1,15 +1,14 @@
 package com.paf.backend.service;
 
 import com.paf.backend.document.Comment;
-import com.paf.backend.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.paf.backend.repository.CommentRepository;
 import com.paf.backend.repository.SkillShareRepository;
 import com.paf.backend.document.SkillSharing;
-import com.paf.backend.service.NotificationService;
 import com.paf.backend.dto.NotificationDto;
 
 import java.util.ArrayList;
