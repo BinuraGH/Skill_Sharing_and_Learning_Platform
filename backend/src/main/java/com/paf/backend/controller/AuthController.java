@@ -1,6 +1,8 @@
 package com.paf.backend.controller;
 
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -34,11 +36,10 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal OAuth2User principal) {
-        String email = principal.getAttribute("email");
-        User user = userRepository.findByEmail(email).orElseThrow();
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> getCurrentUser(Principal principal) {
+        return authService.getCurrentUser(principal);
     }
+
     @GetMapping("/all-users")
     public ResponseEntity<?> getAllUsers() {
     return authService.getAllUsers();
