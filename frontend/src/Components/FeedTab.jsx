@@ -5,6 +5,7 @@ import SkillShareForm from './SkillShareForm';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
 import { FaPenAlt, FaTrash } from 'react-icons/fa';
+import PostReactions from './PostReactions';
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -283,9 +284,10 @@ const FeedTab = () => {
             <div className="post-footer flex items-center gap-6 mb-4">
               <span
                 className="cursor-pointer text-xl"
-                onClick={handleLikeClick}
+                // onClick={handleLikeClick}
               >
-                {liked ? "💜 Liked" : "🤍 Like"}
+                {/* {liked ? "💜 Liked" : "🤍 Like"} */}
+                <PostReactions postId={post.id} />
               </span>
               <span
                 onClick={() => {

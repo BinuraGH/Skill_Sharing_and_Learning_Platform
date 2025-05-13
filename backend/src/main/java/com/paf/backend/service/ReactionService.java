@@ -18,23 +18,28 @@ public class ReactionService {
 
     public Reaction addReaction(Reaction reaction) {
         // Optional: prevent duplicate by same user on same post
-        if (reactionRepository.existsByPostIdAndUserIdAndPostType(reaction.getPostId(), reaction.getUserId(), reaction.getPostType())) {
-            reactionRepository.deleteByPostIdAndUserIdAndPostType(reaction.getPostId(), reaction.getUserId(), reaction.getPostType());
+        if (reactionRepository.existsByPostIdAndUserId(reaction.getPostId(), reaction.getUserId())) {
+            reactionRepository.deleteByPostIdAndUserId(reaction.getPostId(), reaction.getUserId());
         }
         return reactionRepository.save(reaction);
     }
 
-    public void removeReaction(String postId, String userId, String postType) {
-        reactionRepository.deleteByPostIdAndUserIdAndPostType(postId, userId, postType);
+    public void removeReaction(String postId, String userId) {
+        reactionRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
-    public Map<String, Long> getReactionCounts(String postId, String postType) {
-        List<Reaction> reactions = reactionRepository.findByPostIdAndPostType(postId, postType);
+    public Map<String, Long> getReactionCounts(String postId) {
+        List<Reaction> reactions = reactionRepository.findByPostId(postId);
         return reactions.stream()
                 .collect(Collectors.groupingBy(Reaction::getType, Collectors.counting()));
     }
 
-    public long getTotalCount(String postId, String postType) {
-        return reactionRepository.countByPostIdAndPostType(postId, postType);
+    public long getTotalCount(String postId) {
+        return reactionRepository.countByPostId(postId);
     }
+
+    public Reaction getUserReaction(String postId, String userId) {
+        return reactionRepository.findByPostId(postId, userId).orElse(null);
+    }
+
 }
