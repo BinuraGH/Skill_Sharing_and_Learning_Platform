@@ -3,13 +3,8 @@ package com.paf.backend.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import com.paf.backend.document.Reaction;
 import com.paf.backend.service.ReactionService;
@@ -20,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/reactions")
 @RequiredArgsConstructor
 public class ReactionController {
+
     private final ReactionService reactionService;
 
     @PostMapping
@@ -30,29 +26,33 @@ public class ReactionController {
 
     @DeleteMapping
     public ResponseEntity<String> removeReaction(@RequestParam String postId,
-                                                 @RequestParam String userId
-                                                ) {
+                                                 @RequestParam String userId) {
         reactionService.removeReaction(postId, userId);
         return ResponseEntity.ok("Reaction removed successfully.");
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getReactionCounts(@RequestParam String postId
-                                                                ) {
+    public ResponseEntity<Map<String, Long>> getReactionCounts(@RequestParam String postId) {
         return ResponseEntity.ok(reactionService.getReactionCounts(postId));
     }
 
     @GetMapping("/total")
-    public ResponseEntity<Long> getTotalCount(@RequestParam String postId
-                                              ) {
+    public ResponseEntity<Long> getTotalCount(@RequestParam String postId) {
         return ResponseEntity.ok(reactionService.getTotalCount(postId));
     }
 
     @GetMapping("/user")
-    public ResponseEntity<Reaction> getUserReaction(@RequestParam String postId,
-                                                @RequestParam String userId
-                                            ) {
-    Reaction reaction = reactionService.getUserReaction(postId, userId);
-    return ResponseEntity.ok(reaction);
-}
+    public ResponseEntity<?> getUserReaction(
+            @RequestParam String postId,
+            @RequestParam String userId,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        Reaction reaction = reactionService.getUserReaction(postId, userId);
+
+        return ResponseEntity.ok(reaction); // can be null or an actual Reaction
+    }
 }
