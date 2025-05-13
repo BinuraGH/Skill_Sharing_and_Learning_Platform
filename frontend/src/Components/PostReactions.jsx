@@ -25,12 +25,13 @@ const getColoredIcon = (type) => {
 const PostReactions = ({ postId }) => {
   const [user, setUser] = useState(null);
   const [userReaction, setUserReaction] = useState(null);
-  const [loadingUserReaction, setLoadingUserReaction] = useState(true); // NEW
+  const [loadingUserReaction, setLoadingUserReaction] = useState(true);
   const [reactionCounts, setReactionCounts] = useState({});
   const [totalCount, setTotalCount] = useState(0);
   const [showFlyout, setShowFlyout] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Fetch logged-in user
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -40,16 +41,16 @@ const PostReactions = ({ postId }) => {
         setUser(res.data);
       } catch (err) {
         console.error('Failed to fetch user:', err);
+        setUser(null);
       }
     };
+
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
 
+  // Fetch total reaction counts (always)
+  useEffect(() => {
     const fetchReactions = async () => {
       try {
         const res = await axios.get('http://localhost:8080/api/reactions/count', {
@@ -63,26 +64,36 @@ const PostReactions = ({ postId }) => {
       }
     };
 
+    fetchReactions();
+  }, [postId]);
+
+  // Fetch user-specific reaction whenever user ID or postId changes
+  useEffect(() => {
+    if (!user) {
+      setUserReaction(null);
+      return;
+    }
+
     const fetchUserReaction = async () => {
+      if (!user?.id) return;
+      setLoadingUserReaction(true);
       try {
         const res = await axios.get('http://localhost:8080/api/reactions/user', {
           params: { postId, userId: user.id },
         });
-        if (res.data && res.data.type) {
+        if (res.data?.type) {
           setUserReaction(res.data.type);
-        } else {
-          setUserReaction(null);
         }
       } catch (err) {
         console.error('Error fetching user reaction:', err);
       } finally {
-        setLoadingUserReaction(false); // Set loading to false
+        setLoadingUserReaction(false);
       }
     };
 
-    fetchReactions();
     fetchUserReaction();
-  }, [postId, user]);
+  }, [user?.id, postId]);
+
 
   const handleReaction = async (type) => {
     if (loading || !user) return;
@@ -106,7 +117,7 @@ const PostReactions = ({ postId }) => {
         setUserReaction(type);
       }
 
-      // Update counts
+      // Refresh reaction counts
       const res = await axios.get('http://localhost:8080/api/reactions/count', {
         params: { postId },
       });
@@ -134,14 +145,14 @@ const PostReactions = ({ postId }) => {
         <button
           onClick={() => {
             if (userReaction) {
-              handleReaction(userReaction); // Remove if already reacted
+              handleReaction(userReaction); // Remove reaction
             } else {
-              toggleFlyout(); // Open flyout to choose a reaction
+              toggleFlyout(); // Open options
             }
           }}
           className={`flex items-center justify-center w-10 h-10 border rounded-full ${
             isUserReacted ? 'bg-blue-200' : 'bg-gray-300'
-          } hover:bg-gray-100`}
+          } hover:bg-gray-100 transition`}
         >
           {loadingUserReaction ? (
             <FaThumbsUp />
