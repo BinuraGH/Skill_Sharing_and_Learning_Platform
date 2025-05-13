@@ -30,21 +30,29 @@ public class ReactionController {
 
     @DeleteMapping
     public ResponseEntity<String> removeReaction(@RequestParam String postId,
-                                                 @RequestParam String userId,
-                                                 @RequestParam String postType) {
-        reactionService.removeReaction(postId, userId, postType);
+                                                 @RequestParam String userId
+                                                ) {
+        reactionService.removeReaction(postId, userId);
         return ResponseEntity.ok("Reaction removed successfully.");
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getReactionCounts(@RequestParam String postId,
-                                                                @RequestParam String postType) {
-        return ResponseEntity.ok(reactionService.getReactionCounts(postId, postType));
+    public ResponseEntity<Map<String, Long>> getReactionCounts(@RequestParam String postId
+                                                                ) {
+        return ResponseEntity.ok(reactionService.getReactionCounts(postId));
     }
 
     @GetMapping("/total")
-    public ResponseEntity<Long> getTotalCount(@RequestParam String postId,
-                                              @RequestParam String postType) {
-        return ResponseEntity.ok(reactionService.getTotalCount(postId, postType));
+    public ResponseEntity<Long> getTotalCount(@RequestParam String postId
+                                              ) {
+        return ResponseEntity.ok(reactionService.getTotalCount(postId));
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<Reaction> getUserReaction(@RequestParam String postId,
+                                                @RequestParam String userId
+                                            ) {
+    Reaction reaction = reactionService.getUserReaction(postId, userId);
+    return ResponseEntity.ok(reaction);
+}
 }
