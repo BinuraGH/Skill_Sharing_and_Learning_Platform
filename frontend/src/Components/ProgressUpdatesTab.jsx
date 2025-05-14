@@ -1,61 +1,172 @@
-import React, { useState } from "react";
-import LearningProgressForm from "../Components/LearningProgressForm";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ProgressUpdateCard from '../Components/ProgressUpdateCard';
+import LearningProgressForm from '../Components/LearningProgressForm';
 
 const ProgressUpdatesTab = () => {
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
+  const [updates, setUpdates] = useState([]);
+  const [user, setUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState(null);
 
-  const dummyUpdates = [
-    { id: 1, title: "Completed React Basics", date: "2025-05-01", note: "Finished first 3 lessons." },
-    { id: 2, title: "Watched HTML Course", date: "2025-05-03", note: "Done with styling basics." },
-  ];
+  const fetchUpdates = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/progressupdates', {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to fetch updates');
+      const data = await res.json();
+      setUpdates(data);
+    } catch (error) {
+      console.error("Error fetching progress updates:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserAndUpdates = async () => {
+      try {
+        const userRes = await fetch('http://localhost:8080/api/auth/me', {
+          credentials: 'include',
+        });
+        if (!userRes.ok) throw new Error('Failed to fetch user');
+        const userData = await userRes.json();
+        setUser(userData);
+        
+        await fetchUpdates();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserAndUpdates();
+  }, []);
+
+  const handleCreateUpdate = async (newUpdate) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/progressupdates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(newUpdate),
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const createdUpdate = await response.json();
+      setUpdates(prev => [createdUpdate, ...prev]);
+      setShowModal(false);
+    } catch (error) {
+      console.error('Failed to create progress update:', error);
+    }
+  };
+
+  const handleUpdate = async (id, updatedData) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/progressupdates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const updatedUpdate = await response.json();
+      setUpdates(prev => prev.map(u => u._id === id ? updatedUpdate : u));
+      setShowModal(false);
+      setEditingUpdate(null);
+    } catch (error) {
+      console.error('Failed to update progress update:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/progressupdates/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+      setUpdates(prev => prev.filter(u => u._id !== id));
+    } catch (error) {
+      console.error('Failed to delete progress update:', error);
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingUpdate(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (update) => {
+    setEditingUpdate(update);
+    setShowModal(true);
+  };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-3xl font-bold text-gray-800">Progress Updates</h3>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full shadow-lg transition duration-200"
-        >
-          {showForm ? "Close Form" : "📌 Add Update"}
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 py-10 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-10">
+          <h3 className="text-3xl font-bold text-gray-800">My Progress Updates</h3>
+          <button
+            onClick={openCreateModal}
+            className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition"
+          >
+            Create Update
+          </button>
+        </div>
 
-      {/* Modal Overlay */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-4">
-          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh]">
-            {/* Close Button */}
+        {/* Progress Cards Grid */}
+        {updates.length > 0 ? (
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            {updates.map((update) => (
+              <ProgressUpdateCard
+                key={update._id}
+                update={update}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+                showActions={true}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-gray-500 mb-4">No progress updates yet.</p>
             <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-3 right-4 text-gray-500 hover:text-red-500 text-2xl transition duration-150"
-              aria-label="Close Modal"
+              onClick={openCreateModal}
+              className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition"
             >
-              &times;
+              Create Your First Update
             </button>
+          </div>
+        )}
 
-            <div className="px-6 py-8 overflow-y-auto max-h-[90vh]">
-         
-              <LearningProgressForm />
+        {/* Modal for Create/Edit Form */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <LearningProgressForm 
+                initialData={editingUpdate}
+                onSubmit={editingUpdate ? 
+                  (data) => handleUpdate(editingUpdate._id, data) : 
+                  handleCreateUpdate}
+                onCancel={() => {
+                  setShowModal(false);
+                  setEditingUpdate(null);
+                }}
+              />
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Update Cards */}
-      <ul className="space-y-4">
-        {dummyUpdates.map(update => (
-          <li
-            key={update.id}
-            className="bg-white rounded-xl shadow-md p-5 border border-gray-200 hover:shadow-lg transition"
-          >
-            <h4 className="text-xl font-semibold text-purple-700 mb-1">{update.title}</h4>
-            <p className="text-sm text-gray-500">{update.date}</p>
-            <p className="mt-2 text-gray-700">{update.note}</p>
-          </li>
-        ))}
-      </ul>
+        )}
+      </div>
     </div>
   );
 };
