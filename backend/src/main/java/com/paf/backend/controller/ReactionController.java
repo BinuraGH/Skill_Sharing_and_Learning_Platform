@@ -1,5 +1,6 @@
 package com.paf.backend.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -57,6 +58,16 @@ public class ReactionController {
         }
 
         return ResponseEntity.ok(reaction);
+    }
+
+    @GetMapping("/post")
+    public ResponseEntity<?> getReactionsByPost(@RequestParam String postId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        List<Reaction> reactions = reactionService.getReactionsByPost(postId);
+        return ResponseEntity.ok(reactions);
     }
 
 }

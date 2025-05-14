@@ -30,6 +30,8 @@ const PostReactions = ({ postId }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [showFlyout, setShowFlyout] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [allReactions, setAllReactions] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
 
   // Fetch logged-in user
   useEffect(() => {
@@ -81,7 +83,7 @@ const PostReactions = ({ postId }) => {
           params: { postId, userId: user.id },
           withCredentials: true
         });
-
+        console.log("Userreactiions:", res.data);
         if (res.data?.type) {
           setUserReaction(res.data.type);
         } else {
@@ -97,6 +99,20 @@ const PostReactions = ({ postId }) => {
 
     fetchUserReaction();
   }, [user?.id, postId]);
+
+  const fetchAllReactions = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/reactions/post`, {
+          params: { postId },
+          withCredentials: true,
+        });
+        console.log("Reactionlist:", res.data);
+        setAllReactions(res.data);
+        setShowPopup(true);
+      } catch (err) {
+        console.error('Error fetching all reactions:', err);
+      }
+    };
 
 
   const handleReaction = async (type) => {
@@ -115,7 +131,7 @@ const PostReactions = ({ postId }) => {
         // Add or change reaction
         await axios.post(
           'http://localhost:8080/api/reactions',
-          { postId, userId: user.id, type },
+          { postId, userId: user.id, userName: user.name, type },
           { withCredentials: true }
         );
         setUserReaction(type);
@@ -166,8 +182,33 @@ const PostReactions = ({ postId }) => {
             <FaThumbsUp />
           )}
         </button>
-        <span className="text-gray-500">{totalCount}</span>
+        <button onClick={fetchAllReactions} className="text-gray-500 hover:underline">
+          {totalCount}
+        </button>
       </div>
+
+      {showPopup && (
+        <div className="absolute top-full left-0 mt-2 bg-white border shadow-lg rounded-lg z-20 p-4 w-64">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-semibold">Reactions</h3>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <ul className="max-h-64 overflow-y-auto space-y-2">
+            {allReactions.map((reaction) => (
+              <li key={reaction.id} className="flex items-center space-x-2">
+                {getColoredIcon(reaction.type)}
+                <span className="text-sm text-gray-700">{reaction.userName}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
 
       {showFlyout && (
         <div className="absolute z-10 flex bg-white shadow-md rounded-full px-2 py-1 space-x-3 border top-full mt-2">
