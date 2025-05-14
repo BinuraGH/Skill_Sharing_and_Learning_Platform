@@ -14,6 +14,6 @@ public interface ReactionRepository extends MongoRepository<Reaction, String> {
     long countByPostIdAndType(String postId, String type);
     boolean existsByPostIdAndUserId(String postId, String userId);
     void deleteByPostIdAndUserId(String postId, String userId);
-    Optional<Reaction> findByPostId(String postId, String userId);
+    Optional<Reaction> findByPostIdAndUserId(String postId, String userId);
 
 }
