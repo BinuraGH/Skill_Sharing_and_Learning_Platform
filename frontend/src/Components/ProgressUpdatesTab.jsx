@@ -140,12 +140,6 @@ const ProgressUpdatesTab = () => {
         ) : (
           <div className="text-center py-10">
             <p className="text-gray-500 mb-4">No progress updates yet.</p>
-            <button
-              onClick={openCreateModal}
-              className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition"
-            >
-              Create Your First Update
-            </button>
           </div>
         )}
 
