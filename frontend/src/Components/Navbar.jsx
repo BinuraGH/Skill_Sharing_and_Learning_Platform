@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FiSearch, FiHome, FiBookOpen, FiBell, FiMessageSquare } from 'react-icons/fi';
+import { FiSearch, FiHome, FiBookOpen, FiBell, FiClipboard } from 'react-icons/fi';
 import NotificationDropdown from '../Components/NotificationDropdown';
 
 const Navbar = () => {
@@ -178,10 +178,14 @@ const Navbar = () => {
         </div>
 
         {/* Message Icon */}
-        <div className="relative group p-2 rounded-md cursor-pointer transition duration-200 hover:bg-purple-100 hover:shadow-md">
+        <div
+          onClick={() => navigate('/plans')}
+          className="relative group p-2 rounded-md cursor-pointer transition duration-200 hover:bg-purple-100 hover:shadow-md"
+        >
           <div className="absolute inset-0 border-2 border-purple-500 opacity-0 group-hover:opacity-100 rounded-md scale-95 group-hover:scale-100 transition-all duration-200 pointer-events-none"></div>
-          <FiMessageSquare className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
+          <FiClipboard className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
         </div>
+
 
         {/* Profile Image */}
         <div className="relative">
