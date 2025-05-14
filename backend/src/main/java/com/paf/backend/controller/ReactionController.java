@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.paf.backend.document.Reaction;
+import com.paf.backend.dto.ReactionDTO;
 import com.paf.backend.service.ReactionService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,8 @@ public class ReactionController {
     private final ReactionService reactionService;
 
     @PostMapping
-    public ResponseEntity<Reaction> addReaction(@RequestBody Reaction reaction) {
-        Reaction saved = reactionService.addReaction(reaction);
+    public ResponseEntity<Reaction> addReaction(@RequestBody ReactionDTO request) {
+        Reaction saved = reactionService.addReaction(request);
         return ResponseEntity.ok(saved);
     }
 
@@ -42,17 +43,20 @@ public class ReactionController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<?> getUserReaction(
-            @RequestParam String postId,
-            @RequestParam String userId,
-            Authentication authentication
-    ) {
+    public ResponseEntity<?> getUserReaction(@RequestParam String postId,
+                                            @RequestParam String userId,
+                                            Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
 
         Reaction reaction = reactionService.getUserReaction(postId, userId);
 
-        return ResponseEntity.ok(reaction); // can be null or an actual Reaction
+        if (reaction == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(reaction);
     }
+
 }

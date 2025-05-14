@@ -69,23 +69,27 @@ const PostReactions = ({ postId }) => {
 
   // Fetch user-specific reaction whenever user ID or postId changes
   useEffect(() => {
-    if (!user) {
+    if (!user?.id) {
       setUserReaction(null);
       return;
     }
 
     const fetchUserReaction = async () => {
-      if (!user?.id) return;
       setLoadingUserReaction(true);
       try {
         const res = await axios.get('http://localhost:8080/api/reactions/user', {
           params: { postId, userId: user.id },
+          withCredentials: true
         });
+
         if (res.data?.type) {
           setUserReaction(res.data.type);
+        } else {
+          setUserReaction(null); // Explicitly clear if no reaction found
         }
       } catch (err) {
         console.error('Error fetching user reaction:', err);
+        setUserReaction(null); // Prevent stale reaction on error
       } finally {
         setLoadingUserReaction(false);
       }

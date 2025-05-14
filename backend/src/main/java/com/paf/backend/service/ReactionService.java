@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.paf.backend.document.Reaction;
+import com.paf.backend.dto.ReactionDTO;
 import com.paf.backend.repository.ReactionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -14,13 +15,20 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReactionService {
+
     private final ReactionRepository reactionRepository;
 
-    public Reaction addReaction(Reaction reaction) {
-        // Optional: prevent duplicate by same user on same post
-        if (reactionRepository.existsByPostIdAndUserId(reaction.getPostId(), reaction.getUserId())) {
-            reactionRepository.deleteByPostIdAndUserId(reaction.getPostId(), reaction.getUserId());
+    public Reaction addReaction(ReactionDTO request) {
+        if (reactionRepository.existsByPostIdAndUserId(request.getPostId(), request.getUserId())) {
+            reactionRepository.deleteByPostIdAndUserId(request.getPostId(), request.getUserId());
         }
+
+        Reaction reaction = Reaction.builder()
+                .postId(request.getPostId())
+                .userId(request.getUserId())
+                .type(request.getType())
+                .build();
+
         return reactionRepository.save(reaction);
     }
 
@@ -39,7 +47,6 @@ public class ReactionService {
     }
 
     public Reaction getUserReaction(String postId, String userId) {
-        return reactionRepository.findByPostId(postId, userId).orElse(null);
+        return reactionRepository.findByPostIdAndUserId(postId, userId).orElse(null);
     }
-
 }
