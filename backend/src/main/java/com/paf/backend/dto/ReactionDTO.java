@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class ReactionDTO {
     private String postId;
     private String userId;
+    private String userName;
     private String type; // e.g., "like", "heart", "celebrate"
 }
