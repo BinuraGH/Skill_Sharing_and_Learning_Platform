@@ -26,6 +26,7 @@ public class ReactionService {
         Reaction reaction = Reaction.builder()
                 .postId(request.getPostId())
                 .userId(request.getUserId())
+                .userName(request.getUserName())
                 .type(request.getType())
                 .build();
 
@@ -49,4 +50,9 @@ public class ReactionService {
     public Reaction getUserReaction(String postId, String userId) {
         return reactionRepository.findByPostIdAndUserId(postId, userId).orElse(null);
     }
+
+    public List<Reaction> getReactionsByPost(String postId) {
+        return reactionRepository.findByPostId(postId);
+}
+
 }
