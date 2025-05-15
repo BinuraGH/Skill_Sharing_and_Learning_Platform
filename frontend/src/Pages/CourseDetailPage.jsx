@@ -37,6 +37,22 @@ const CourseDetailPage = () => {
 
       setPlan(prev => ({ ...prev, topics: updatedTopics }));
       setProgress(newProgress);
+
+      // ✅ Notify on plan completion
+      if (newProgress === 100) {
+        await fetch(`http://localhost:8080/api/notifications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: plan.userId, // Make sure your backend plan object includes `userId`
+            type: 'planComplete',
+            message: `🎉 Congratulations! You've completed the "${plan.title}" learning plan.`,
+          }),
+        });
+      }
+
     } catch (err) {
       console.error("❌ Error marking topic complete:", err);
     }
