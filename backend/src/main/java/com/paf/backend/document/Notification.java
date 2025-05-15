@@ -10,10 +10,11 @@ public class Notification {
     @Id
     private String id;
 
-    private String userId;      // Receiver of the notification
-    private String type;        // e.g., "comment", "like"
+    private String userId; // Receiver of the notification
+    private String type; // e.g., "comment", "like"
     private String message;
     private String postId;
+    private String reaction;
     private boolean isRead = false;
     private String timestamp;
 }
