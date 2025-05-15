@@ -19,6 +19,6 @@ public class Reaction {
 
     private String postId;
     private String userId;
-    private String postType; // "skill", "plan", "progress"
+    private String userName;
     private String type;     // "like", "heart", "celebrate"
 }

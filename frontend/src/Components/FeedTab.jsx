@@ -5,6 +5,7 @@ import SkillShareForm from './SkillShareForm';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
 import { FaPenAlt, FaTrash } from 'react-icons/fa';
+import PostReactions from './PostReactions';
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -283,9 +284,10 @@ const FeedTab = () => {
             <div className="post-footer flex items-center gap-6 mb-4">
               <span
                 className="cursor-pointer text-xl"
-                onClick={handleLikeClick}
+                // onClick={handleLikeClick}
               >
-                {liked ? "💜 Liked" : "🤍 Like"}
+                {/* {liked ? "💜 Liked" : "🤍 Like"} */}
+                <PostReactions postId={post.id} />
               </span>
               <span
                 onClick={() => {
@@ -316,6 +318,8 @@ const FeedTab = () => {
                       comment={comment}
                       onDelete={handleDeleteComment}
                       onEdit={handleEditComment}
+                      user={user}
+                      postOwnerId={post.userId}
                     />
 
                   ))}
@@ -370,70 +374,70 @@ const FeedTab = () => {
 export default FeedTab;
 
 // CommentItem component inside same file
-const CommentItem = ({ comment, onDelete, onEdit }) => {
+const CommentItem = ({ comment, onEdit, onDelete, user, postOwnerId }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(comment.text);
+  const [editedText, setEditedText] = useState(comment.text);
 
-  console.log('Comment inside CommentItem:', comment);
+  const isCommentAuthor = user?.id === comment.userId;
+  const isPostOwner = user?.id === postOwnerId;
 
-  const handleSave = async () => {
-    await onEdit(comment.id, editText);
+  const handleSaveEdit = () => {
+    onEdit(comment.id, editedText);
     setIsEditing(false);
   };
 
   return (
-    <div className="flex items-start gap-2">
-      <div className="flex-1">
-        <strong className="text-sm text-gray-700">
-          {comment.userName || 'User'}
-        </strong>
-
+    <div className="bg-gray-100 p-3 rounded-md flex justify-between items-start">
+      <div>
+        <div className="font-semibold">{comment.userName}</div>
         {isEditing ? (
-          <div className="flex items-center gap-2 mt-1">
+          <>
             <input
-              className="flex-1 border rounded-md p-1 text-sm"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              className="border rounded px-2 py-1 mt-1"
             />
-            <button
-              onClick={handleSave}
-              className="text-green-500 hover:underline text-sm"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setEditText(comment.text);
-              }}
-              className="text-gray-400 hover:underline text-sm"
-            >
-              Cancel
-            </button>
-          </div>
+            <div className="flex gap-2 mt-1">
+              <button
+                className="text-blue-600 text-sm"
+                onClick={handleSaveEdit}
+              >
+                Save
+              </button>
+              <button
+                className="text-gray-500 text-sm"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditedText(comment.text);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </>
         ) : (
-          <p className="text-sm mt-1">{comment.text}</p>
+          <p className="text-gray-800">{comment.text}</p>
         )}
       </div>
 
-      {!isEditing && (
-        <div className="flex gap-2">
+      <div className="flex gap-2 ml-2">
+        {isCommentAuthor && (
           <button
+            className="text-blue-500 hover:text-blue-700"
             onClick={() => setIsEditing(true)}
-            className="text-blue-500 hover:text-blue-700 text-sm"
           >
-            <FaPenAlt />
+            <FaPenAlt size={14} />
           </button>
+        )}
+        {(isCommentAuthor || isPostOwner) && (
           <button
-            onClick={async () => await onDelete(comment.id)}
-            className="text-red-500 hover:text-red-700 text-sm"
+            className="text-red-500 hover:text-red-700"
+            onClick={() => onDelete(comment.id)}
           >
-            <FaTrash />
+            <FaTrash size={14} />
           </button>
-
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
-
