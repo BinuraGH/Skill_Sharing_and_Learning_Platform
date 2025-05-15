@@ -6,11 +6,11 @@ import com.paf.backend.dto.NotificationDto;
 import com.paf.backend.repository.UserRepository;
 import com.paf.backend.service.FollowService;
 import com.paf.backend.service.NotificationService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/follow")
@@ -27,7 +27,7 @@ public class FollowController {
     public Follow follow(@RequestParam String followerId, @RequestParam String followedId) {
         Follow follow = service.followUser(followerId, followedId);
 
-        //Create follow notification
+        // Create follow notification
         String followerName = userRepository.findById(followerId)
                 .map(User::getName)
                 .orElse("Someone");
@@ -39,7 +39,6 @@ public class FollowController {
         dto.setPostId(null); // not related to a post
 
         notificationService.createNotification(dto);
-
         return follow;
     }
 
@@ -49,15 +48,31 @@ public class FollowController {
         service.unfollowUser(followerId, followedId);
     }
 
-    // Get users that this user is following
+    // Get users that this user is following with details
     @GetMapping("/{userId}/following")
-    public List<Follow> getFollowing(@PathVariable String userId) {
-        return service.getFollowing(userId);
+    public List<Map<String, Object>> getFollowing(@PathVariable String userId) {
+        List<Follow> followingList = service.getFollowing(userId);
+        return followingList.stream().map(f -> {
+            Optional<User> followedUser = userRepository.findById(f.getFollowedId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("followedId", f.getFollowedId());
+            map.put("followedName", followedUser.map(User::getName).orElse("Unknown"));
+            map.put("followedProfilePicture", followedUser.map(User::getProfilePicture).orElse(""));
+            return map;
+        }).collect(Collectors.toList());
     }
 
-    // Get followers of a user
+    // Get followers of a user with details
     @GetMapping("/{userId}/followers")
-    public List<Follow> getFollowers(@PathVariable String userId) {
-        return service.getFollowers(userId);
+    public List<Map<String, Object>> getFollowers(@PathVariable String userId) {
+        List<Follow> followersList = service.getFollowers(userId);
+        return followersList.stream().map(f -> {
+            Optional<User> followerUser = userRepository.findById(f.getFollowerId());
+            Map<String, Object> map = new HashMap<>();
+            map.put("followerId", f.getFollowerId());
+            map.put("followerName", followerUser.map(User::getName).orElse("Unknown"));
+            map.put("followerProfilePicture", followerUser.map(User::getProfilePicture).orElse(""));
+            return map;
+        }).collect(Collectors.toList());
     }
 }
