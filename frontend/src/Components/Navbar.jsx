@@ -113,6 +113,16 @@ const Navbar = () => {
     const years = Math.floor(months / 12);
     return `${years} year${years === 1 ? '' : 's'} ago`;
   };
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:8080/api/auth/logout', {}, {
+        withCredentials: true,
+      });
+      navigate('/');
+    } catch (err) {
+      console.error('Error logging out:', err);
+    }
+  };
 
 
   const imageSrc =
@@ -223,9 +233,13 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <button className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition duration-150">
-                    Log out
-                  </button>
+                  <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition duration-150"
+                    >
+                      Log out
+                    </button>
+
                 </li>
               </ul>
             </div>
