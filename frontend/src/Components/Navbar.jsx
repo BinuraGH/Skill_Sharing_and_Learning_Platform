@@ -73,7 +73,7 @@ const Navbar = () => {
 
     if (isOpening) {
       const unreadCommentIds = notifications
-        .filter(n => !n.isRead && (n.type === 'comment' || n.type === 'follow'))
+        .filter(n => !n.isRead && (n.type === 'comment' || n.type === 'follow' || n.type === 'reaction' || n.type === 'planComplete'))
         .map(n => n.id);
 
       setLastSeenNotificationIds(unreadCommentIds);
@@ -162,15 +162,15 @@ const Navbar = () => {
             (n) =>
               !n.isRead && !lastSeenNotificationIds.includes(n.id)
           ).length > 0 && (
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-1 rounded-full leading-tight">
-              {
-                notifications.filter(
-                  (n) =>
-                    !n.isRead && !lastSeenNotificationIds.includes(n.id)
-                ).length
-              }
-            </span>
-          )}
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-1 rounded-full leading-tight">
+                {
+                  notifications.filter(
+                    (n) =>
+                      !n.isRead && !lastSeenNotificationIds.includes(n.id)
+                  ).length
+                }
+              </span>
+            )}
 
           {showNotifications && (
             <NotificationDropdown notifications={notifications} timeAgo={timeAgo} />
