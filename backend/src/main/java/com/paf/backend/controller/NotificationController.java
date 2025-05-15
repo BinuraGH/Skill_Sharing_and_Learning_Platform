@@ -30,4 +30,14 @@ public class NotificationController {
     public Notification markAsRead(@PathVariable String id) {
         return notificationService.markAsRead(id);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteNotification(@PathVariable String id) {
+        notificationService.deleteNotification(id);
+    }
+
+    @DeleteMapping("/user/{userId}/clear")
+    public void clearAllNotifications(@PathVariable String userId) {
+        notificationService.clearAllNotifications(userId);
+    }
 }
