@@ -21,6 +21,7 @@ public class NotificationService {
         notification.setType(dto.getType());
         notification.setMessage(dto.getMessage());
         notification.setPostId(dto.getPostId());
+        notification.setReaction(dto.getReaction());
         notification.setTimestamp(LocalDateTime.now().toString());
         return repository.save(notification);
     }
@@ -31,7 +32,7 @@ public class NotificationService {
 
     public Notification markAsRead(String id) {
         Notification notification = repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.setRead(true);
         return repository.save(notification);
     }

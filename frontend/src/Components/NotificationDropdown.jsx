@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { FaHeart, FaMedal, FaThumbsUp } from 'react-icons/fa';
 import { FiUserPlus, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
-import { FaCheckCircle } from 'react-icons/fa';
 
 const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) => {
   const [showAll, setShowAll] = useState(false);
@@ -42,25 +42,33 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
           visibleNotifications.map((n) => (
             <li
               key={n.id}
-              className={`flex items-start px-4 py-3 transition relative ${
-                !n.isRead ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'
-              }`}
+              className={`flex items-start px-4 py-3 transition relative ${!n.isRead ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'
+                }`}
             >
               <div
-                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white ${
-                  n.type === 'follow'
-                    ? 'bg-blue-500'
-                    : n.type === 'planComplete'
-                    ? 'bg-green-500'
-                    : 'bg-purple-500'
-                }`}
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white ${n.type === 'follow'
+                  ? 'bg-blue-500'
+                  : n.type === 'comment'
+                    ? 'bg-purple-500'
+                    : n.type === 'reaction' && n.reaction === 'like'
+                      ? 'bg-blue-600'
+                      : n.type === 'reaction' && n.reaction === 'heart'
+                        ? 'bg-red-500'
+                        : n.type === 'reaction' && n.reaction === 'celebrate'
+                          ? 'bg-green-500'
+                          : 'bg-gray-500'
+                  }`}
               >
                 {n.type === 'follow' ? (
                   <FiUserPlus className="text-lg" />
-                ) : n.type === 'planComplete' ? (
-                  <FaCheckCircle className="text-lg" />
-                ) : (
+                ) : n.type === 'comment' ? (
                   <FiMessageSquare className="text-lg" />
+                ) : n.type === 'reaction' && n.reaction === 'heart' ? (
+                  <FaHeart className="text-lg" />
+                ) : n.type === 'reaction' && n.reaction === 'like' ? (
+                  <FaThumbsUp className="text-lg" />
+                ) : (
+                  <FaMedal className="text-lg" />
                 )}
               </div>
 
