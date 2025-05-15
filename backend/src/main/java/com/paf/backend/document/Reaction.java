@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Reaction {
-     @Id
+    @Id
     private String id;
 
     private String postId;
     private String userId;
     private String userName;
-    private String type;     // "like", "heart", "celebrate"
+    private String type; // "like", "heart", "celebrate"
 }
