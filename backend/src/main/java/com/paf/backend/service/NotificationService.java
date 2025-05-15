@@ -35,4 +35,13 @@ public class NotificationService {
         notification.setRead(true);
         return repository.save(notification);
     }
+
+    public void deleteNotification(String id) {
+        repository.deleteById(id);
+    }
+
+    public void clearAllNotifications(String userId) {
+        List<Notification> notifications = getNotificationsForUser(userId);
+        repository.deleteAll(notifications);
+    }
 }
