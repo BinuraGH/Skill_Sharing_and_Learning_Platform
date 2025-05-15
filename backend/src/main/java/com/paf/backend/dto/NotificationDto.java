@@ -8,4 +8,5 @@ public class NotificationDto {
     private String type;
     private String message;
     private String postId;
+    private String reaction;
 }

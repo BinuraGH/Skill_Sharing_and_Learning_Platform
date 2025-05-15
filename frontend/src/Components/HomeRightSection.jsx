@@ -5,7 +5,8 @@ const HomeRightSection = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [following, setFollowing] = useState([]);
   const [hoveredUserId, setHoveredUserId] = useState(null);
-  const [fadingUsers, setFadingUsers] = useState([]);
+  const [fadingOutUserId, setFadingOutUserId] = useState(null);
+
 
   // 1️⃣ Fetch current logged-in user
   useEffect(() => {
@@ -56,30 +57,25 @@ const HomeRightSection = () => {
 
   // 4️⃣ Follow/Unfollow handler
   const toggleFollow = async (followedId) => {
-    const isFollowingNow = following.includes(followedId);
+    const isFollowing = following.includes(followedId);
     if (!currentUser?.id) return;
 
     try {
-      if (!isFollowingNow) {
+      if (!isFollowing) {
+        setFadingOutUserId(followedId); // Trigger fade
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'POST'
         });
 
-        // Fade out the followed user
-        setFadingUsers(prev => [...prev, followedId]);
-
-        // Delay actual removal
+        // Delay before removing from UI
         setTimeout(() => {
-          setUsers(prev => prev.filter(user => user.id !== followedId));
-          setFadingUsers(prev => prev.filter(id => id !== followedId));
           setFollowing(prev => [...prev, followedId]);
-        }, 500); // Match this duration with CSS transition time
-
+          setFadingOutUserId(null);
+        }, 300); // match CSS transition
       } else {
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'DELETE'
         });
-
         setFollowing(prev => prev.filter(id => id !== followedId));
       }
     } catch (err) {
@@ -88,26 +84,35 @@ const HomeRightSection = () => {
   };
 
 
+  if (!currentUser || following.length === 0 && users.length > 0) {
+    return (
+      <div className="right-section bg-white rounded-xl p-4 shadow-md">
+        <h4 className="text-lg font-semibold mb-4">Suggested for you</h4>
+        <p className="text-gray-400 text-sm">Loading suggestions...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="right-section bg-white rounded-xl p-4 shadow-md">
       <h4 className="text-lg font-semibold mb-4">Suggested for you</h4>
       <ul className="suggested-list space-y-4">
         {users
-          .filter(user => user.id !== currentUser?.id)
+          .filter(user => user.id !== currentUser?.id && !following.includes(user.id))
           .map((user, index) => {
             const isFollowing = following.includes(user.id);
             const isHovered = hoveredUserId === user.id;
 
             return (
               <li
-                  key={user.id}
-                  className={`transition-opacity duration-500 ${
-                    fadingUsers.includes(user.id) ? 'opacity-0' : 'opacity-100'
-                  }`}
-                >
+                key={user.id}
+                className={`transition-opacity duration-300 ${
+                  fadingOutUserId === user.id ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}
+              >
                 <div className="suggested-item flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                  <img
+                    <img
                       src={
                         user.profilePicture?.trim()
                           ? user.profilePicture
@@ -116,7 +121,6 @@ const HomeRightSection = () => {
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
-
                     <p className="font-medium">{user.name}</p>
                   </div>
                   <button
@@ -136,8 +140,13 @@ const HomeRightSection = () => {
             );
           })}
       </ul>
+
+      {users.filter(user => user.id !== currentUser?.id && !following.includes(user.id)).length === 0 && (
+        <p className="text-gray-500 text-sm mt-2">No more suggestions</p>
+      )}
     </div>
   );
+
 };
 
 export default HomeRightSection;

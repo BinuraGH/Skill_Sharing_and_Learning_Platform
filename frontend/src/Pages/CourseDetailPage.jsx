@@ -7,21 +7,30 @@ const CourseDetailPage = () => {
   const { id } = useParams();
   const [plan, setPlan] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [loggedInUser, setLoggedInUser] = useState(null);
+
 
   useEffect(() => {
-    const fetchPlan = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/plans/${id}/progress`);
-        const data = await res.json();
-        setPlan(data);
-        setProgress(data.progressPercentage);
+        const userRes = await fetch('http://localhost:8080/api/auth/me', {
+          credentials: 'include',
+        });
+        const user = await userRes.json();
+        setLoggedInUser(user);
+
+        const planRes = await fetch(`http://localhost:8080/api/plans/${id}/progress`);
+        const planData = await planRes.json();
+        setPlan(planData);
+        setProgress(planData.progressPercentage);
       } catch (err) {
-        console.error("❌ Error loading plan details:", err);
+        console.error("❌ Error loading data:", err);
       }
     };
 
-    fetchPlan();
+    fetchData();
   }, [id]);
+
 
   const handleMarkComplete = async (index) => {
     try {
@@ -37,6 +46,23 @@ const CourseDetailPage = () => {
 
       setPlan(prev => ({ ...prev, topics: updatedTopics }));
       setProgress(newProgress);
+
+     // ✅ Notify on plan completion
+    if (newProgress === 100 && loggedInUser) {
+      await fetch(`http://localhost:8080/api/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: loggedInUser.id, // ✅ Send to the current user
+          type: 'planComplete',
+          message: `🎉 Congratulations! You've completed the "${plan.title}" learning plan.`,
+        }),
+      });
+    }
+
+
     } catch (err) {
       console.error("❌ Error marking topic complete:", err);
     }
