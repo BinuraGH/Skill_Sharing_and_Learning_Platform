@@ -101,18 +101,18 @@ const PostReactions = ({ postId }) => {
   }, [user?.id, postId]);
 
   const fetchAllReactions = async () => {
-      try {
-        const res = await axios.get(`http://localhost:8080/api/reactions/post`, {
-          params: { postId },
-          withCredentials: true,
-        });
-        console.log("Reactionlist:", res.data);
-        setAllReactions(res.data);
-        setShowPopup(true);
-      } catch (err) {
-        console.error('Error fetching all reactions:', err);
-      }
-    };
+    try {
+      const res = await axios.get(`http://localhost:8080/api/reactions/post`, {
+        params: { postId },
+        withCredentials: true,
+      });
+      console.log("Reactionlist:", res.data);
+      setAllReactions(res.data);
+      setShowPopup(true);
+    } catch (err) {
+      console.error('Error fetching all reactions:', err);
+    }
+  };
 
 
   const handleReaction = async (type) => {
@@ -170,9 +170,8 @@ const PostReactions = ({ postId }) => {
               toggleFlyout(); // Open options
             }
           }}
-          className={`flex items-center justify-center w-10 h-10 border rounded-full ${
-            isUserReacted ? 'bg-blue-200' : 'bg-gray-300'
-          } hover:bg-gray-100 transition`}
+          className={`flex items-center justify-center w-10 h-10 border rounded-full ${isUserReacted ? 'bg-blue-200' : 'bg-gray-300'
+            } hover:bg-gray-100 transition`}
         >
           {loadingUserReaction ? (
             <FaThumbsUp />
@@ -216,11 +215,10 @@ const PostReactions = ({ postId }) => {
             <button
               key={r.type}
               onClick={() => handleReaction(r.type)}
-              className={`text-xl p-2 rounded-full transition ${
-                userReaction === r.type
+              className={`text-xl p-2 rounded-full transition ${userReaction === r.type
                   ? 'ring-2 ring-offset-1 ring-blue-300'
                   : 'hover:bg-gray-100'
-              }`}
+                }`}
             >
               {r.icon}
             </button>
