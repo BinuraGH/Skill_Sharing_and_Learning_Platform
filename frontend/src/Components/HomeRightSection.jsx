@@ -5,6 +5,8 @@ const HomeRightSection = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [following, setFollowing] = useState([]);
   const [hoveredUserId, setHoveredUserId] = useState(null);
+  const [fadingOutUserId, setFadingOutUserId] = useState(null);
+
 
   // 1️⃣ Fetch current logged-in user
   useEffect(() => {
@@ -59,21 +61,28 @@ const HomeRightSection = () => {
     if (!currentUser?.id) return;
 
     try {
-      if (isFollowing) {
+      if (!isFollowing) {
+        setFadingOutUserId(followedId); // Trigger fade
+        await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
+          method: 'POST'
+        });
+
+        // Delay before removing from UI
+        setTimeout(() => {
+          setFollowing(prev => [...prev, followedId]);
+          setFadingOutUserId(null);
+        }, 300); // match CSS transition
+      } else {
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'DELETE'
         });
         setFollowing(prev => prev.filter(id => id !== followedId));
-      } else {
-        await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
-          method: 'POST'
-        });
-        setFollowing(prev => [...prev, followedId]);
       }
     } catch (err) {
       console.error("Error following/unfollowing:", err);
     }
   };
+
 
   if (!currentUser || following.length === 0 && users.length > 0) {
     return (
@@ -95,7 +104,12 @@ const HomeRightSection = () => {
             const isHovered = hoveredUserId === user.id;
 
             return (
-              <li key={user.id}>
+              <li
+                key={user.id}
+                className={`transition-opacity duration-300 ${
+                  fadingOutUserId === user.id ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}
+              >
                 <div className="suggested-item flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
