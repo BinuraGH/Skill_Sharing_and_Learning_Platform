@@ -173,8 +173,17 @@ const Navbar = () => {
           )}
 
           {showNotifications && (
-            <NotificationDropdown notifications={notifications} timeAgo={timeAgo} />
-          )}
+          <NotificationDropdown
+            notifications={notifications}
+            timeAgo={timeAgo}
+            fetchNotifications={async () => {
+              const res = await axios.get(`http://localhost:8080/api/notifications/${user.id}`);
+              const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+              setNotifications(sorted);
+            }}
+          />
+        )}
+
         </div>
 
         {/* Message Icon */}
