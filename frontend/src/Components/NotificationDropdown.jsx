@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { FiUserPlus, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
-import { FaCheckCircle } from 'react-icons/fa';
+import {
+  FiUserPlus,
+  FiMessageSquare,
+  FiTrash2,
+} from 'react-icons/fi';
+import {
+  FaHeart,
+  FaThumbsUp,
+  FaMedal,
+  FaCheckCircle,
+} from 'react-icons/fa';
 
 const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) => {
   const [showAll, setShowAll] = useState(false);
@@ -20,6 +29,30 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
       method: 'DELETE',
     });
     fetchNotifications();
+  };
+
+  const getIcon = (n) => {
+    if (n.type === 'follow') return <FiUserPlus className="text-lg" />;
+    if (n.type === 'comment') return <FiMessageSquare className="text-lg" />;
+    if (n.type === 'reaction') {
+      if (n.reaction === 'heart') return <FaHeart className="text-lg" />;
+      if (n.reaction === 'like') return <FaThumbsUp className="text-lg" />;
+      if (n.reaction === 'celebrate') return <FaMedal className="text-lg" />;
+    }
+    if (n.type === 'planComplete') return <FaCheckCircle className="text-lg" />;
+    return <FaMedal className="text-lg" />;
+  };
+
+  const getBgColor = (n) => {
+    if (n.type === 'follow') return 'bg-blue-500';
+    if (n.type === 'comment') return 'bg-purple-500';
+    if (n.type === 'reaction') {
+      if (n.reaction === 'like') return 'bg-blue-600';
+      if (n.reaction === 'heart') return 'bg-red-500';
+      if (n.reaction === 'celebrate') return 'bg-green-500';
+    }
+    if (n.type === 'planComplete') return 'bg-green-500';
+    return 'bg-gray-500';
   };
 
   return (
@@ -47,27 +80,9 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
               }`}
             >
               <div
-                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white ${
-                  n.type === 'follow'
-                    ? 'bg-blue-500'
-                    : n.type === 'planComplete'
-                    ? 'bg-green-500'
-                    : 'bg-purple-500'
-                }`}
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white ${getBgColor(n)}`}
               >
-                {n.type === 'follow' ? (
-                  <FiUserPlus className="text-lg" />
-                ) : n.type === 'planComplete' ? (
-                  <FaCheckCircle className="text-lg" />
-                ) : (
-                  <FiMessageSquare className="text-lg" />
-                ) : n.type === 'reaction' && n.reaction === 'heart' ? (
-                  <FaHeart className="text-lg" />
-                ) : n.type === 'reaction' && n.reaction === 'like' ? (
-                  <FaThumbsUp className="text-lg" />
-                ) : (
-                  <FaMedal className="text-lg" />
-                )}
+                {getIcon(n)}
               </div>
 
               <div className="ml-3 text-sm pr-6">
