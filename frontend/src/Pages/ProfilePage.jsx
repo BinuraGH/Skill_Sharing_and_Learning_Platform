@@ -11,21 +11,37 @@ const ProfilePage = () => {
   const [showFollowerPopup, setShowFollowerPopup] = useState(false);
   const [showFollowingPopup, setShowFollowingPopup] = useState(false);
 
-  const followerRef = useRef(null);
-  const followingRef = useRef(null);
+  const followerTimeoutRef = useRef(null);
+  const followingTimeoutRef = useRef(null);
 
-  // 🧠 Delay hiding of popups
-  const hideWithDelay = (setter) => {
-    setTimeout(() => setter(false), 150);
+  // 🧠 Handle popup hover delay
+  const handleFollowerMouseEnter = () => {
+    clearTimeout(followerTimeoutRef.current);
+    setShowFollowerPopup(true);
+  };
+
+  const handleFollowerMouseLeave = () => {
+    followerTimeoutRef.current = setTimeout(() => {
+      setShowFollowerPopup(false);
+    }, 200);
+  };
+
+  const handleFollowingMouseEnter = () => {
+    clearTimeout(followingTimeoutRef.current);
+    setShowFollowingPopup(true);
+  };
+
+  const handleFollowingMouseLeave = () => {
+    followingTimeoutRef.current = setTimeout(() => {
+      setShowFollowingPopup(false);
+    }, 200);
   };
 
   // 🔁 Fetch user + followers + following
   useEffect(() => {
     const fetchUserAndFollows = async () => {
       try {
-        const res = await axios.get('http://localhost:8080/api/auth/me', {
-          withCredentials: true,
-        });
+        const res = await axios.get('http://localhost:8080/api/auth/me', { withCredentials: true });
         const currentUser = res.data;
         setUser(currentUser);
 
@@ -89,14 +105,15 @@ const ProfilePage = () => {
                 <p>📅 Joined January 2022</p>
 
                 <div className="mt-2 font-medium relative flex space-x-6">
-                  {/* 👥 Followers */}
+                  {/* Followers */}
                   <div
+                    onMouseEnter={handleFollowerMouseEnter}
+                    onMouseLeave={handleFollowerMouseLeave}
                     className="relative"
-                    onMouseEnter={() => setShowFollowerPopup(true)}
-                    onMouseLeave={() => hideWithDelay(setShowFollowerPopup)}
-                    ref={followerRef}
                   >
-                    <span className="text-black cursor-pointer">{followers.length}</span> followers
+                    <div className="inline-block cursor-pointer">
+                      <span className="text-black">{followers.length}</span> followers
+                    </div>
 
                     {showFollowerPopup && (
                       <div className="absolute z-10 bg-white shadow-lg rounded-md border mt-1 w-60 text-left p-2 max-h-60 overflow-y-auto">
@@ -126,14 +143,15 @@ const ProfilePage = () => {
                     )}
                   </div>
 
-                  {/* ➕ Following */}
+                  {/* Following */}
                   <div
+                    onMouseEnter={handleFollowingMouseEnter}
+                    onMouseLeave={handleFollowingMouseLeave}
                     className="relative"
-                    onMouseEnter={() => setShowFollowingPopup(true)}
-                    onMouseLeave={() => hideWithDelay(setShowFollowingPopup)}
-                    ref={followingRef}
                   >
-                    <span className="text-black cursor-pointer">{following.length}</span> following
+                    <div className="inline-block cursor-pointer">
+                      <span className="text-black">{following.length}</span> following
+                    </div>
 
                     {showFollowingPopup && (
                       <div className="absolute z-10 bg-white shadow-lg rounded-md border mt-1 w-60 text-left p-2 max-h-60 overflow-y-auto">
@@ -190,7 +208,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Learning */}
+            {/* Currently Learning */}
             <div className="bg-white rounded-xl shadow p-6">
               <h3 className="font-semibold mb-3">Currently Learning</h3>
               <div className="flex flex-wrap gap-2">
@@ -214,3 +232,4 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+
