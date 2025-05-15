@@ -1,6 +1,8 @@
 package com.paf.backend.controller;
 
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +10,6 @@ import com.paf.backend.dto.UserDto;
 import com.paf.backend.dto.LoginDTO;
 import com.paf.backend.service.AuthService;
 
-import java.security.Principal;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -30,10 +31,9 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Principal principal) {
-        System.out.println("Principal Name: " + principal.getName());
-        System.out.println("Hit /me with principal: " + principal);
         return authService.getCurrentUser(principal);
     }
+
     @GetMapping("/all-users")
     public ResponseEntity<?> getAllUsers() {
     return authService.getAllUsers();

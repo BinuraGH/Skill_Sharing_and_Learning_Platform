@@ -5,6 +5,7 @@ const HomeRightSection = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [following, setFollowing] = useState([]);
   const [hoveredUserId, setHoveredUserId] = useState(null);
+  const [fadingUsers, setFadingUsers] = useState([]);
 
   // 1️⃣ Fetch current logged-in user
   useEffect(() => {
@@ -55,25 +56,37 @@ const HomeRightSection = () => {
 
   // 4️⃣ Follow/Unfollow handler
   const toggleFollow = async (followedId) => {
-    const isFollowing = following.includes(followedId);
+    const isFollowingNow = following.includes(followedId);
     if (!currentUser?.id) return;
 
     try {
-      if (isFollowing) {
-        await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
-          method: 'DELETE'
-        });
-        setFollowing(prev => prev.filter(id => id !== followedId));
-      } else {
+      if (!isFollowingNow) {
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'POST'
         });
-        setFollowing(prev => [...prev, followedId]);
+
+        // Fade out the followed user
+        setFadingUsers(prev => [...prev, followedId]);
+
+        // Delay actual removal
+        setTimeout(() => {
+          setUsers(prev => prev.filter(user => user.id !== followedId));
+          setFadingUsers(prev => prev.filter(id => id !== followedId));
+          setFollowing(prev => [...prev, followedId]);
+        }, 500); // Match this duration with CSS transition time
+
+      } else {
+        await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
+          method: 'DELETE'
+        });
+
+        setFollowing(prev => prev.filter(id => id !== followedId));
       }
     } catch (err) {
       console.error("Error following/unfollowing:", err);
     }
   };
+
 
   return (
     <div className="right-section bg-white rounded-xl p-4 shadow-md">
@@ -86,14 +99,24 @@ const HomeRightSection = () => {
             const isHovered = hoveredUserId === user.id;
 
             return (
-              <li key={user.id}>
+              <li
+                  key={user.id}
+                  className={`transition-opacity duration-500 ${
+                    fadingUsers.includes(user.id) ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
                 <div className="suggested-item flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <img
-                      src={`https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`}
+                  <img
+                      src={
+                        user.profilePicture?.trim()
+                          ? user.profilePicture
+                          : `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`
+                      }
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
+
                     <p className="font-medium">{user.name}</p>
                   </div>
                   <button

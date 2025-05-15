@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { FaChevronDown, FaChevronUp, FaPhotoVideo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import SkillShareForm from './SkillShareForm';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
+import { FaPenAlt, FaTrash } from 'react-icons/fa';
+import PostReactions from './PostReactions';
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -13,11 +15,9 @@ const FeedTab = () => {
   const [liked, setLiked] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [user, setUser] = useState(null); // State to store logged-in user's data
-  const [expanded, setExpanded] = useState(false);
-  const [description, setDescription] = useState("");
-  const [mediaFiles, setMediaFiles] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryItems, setGalleryItems] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -128,48 +128,8 @@ const FeedTab = () => {
     setLiked(!liked);
   };
 
-  const toggleExpand = () => setExpanded(prev => !prev);
 
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 3) {
-      toast.warn("You can upload up to 3 media files.");
-      return;
-    }
-    setMediaFiles(selectedFiles);
-  };
-
-  const handlePost = async () => {
-    if (!description.trim()) {
-      toast.error("Description is required.");
-      return;
-    }
-
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append("userId", user?.id);
-    formData.append("uname", user?.name);
-    formData.append("description", description);
-    mediaFiles.forEach(file => formData.append("media", file));
-
-    try {
-      await axios.post("http://localhost:8080/api/skill-sharing", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-
-      toast.success("Post uploaded successfully!");
-      setDescription("");
-      setMediaFiles([]);
-      setExpanded(false);
-      fetchPosts();
-    } catch (error) {
-      toast.error("Failed to upload post.");
-      console.error("Upload error:", error.response?.data || error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  //Vanuja
   const fetchPosts = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/skill-sharing");
@@ -187,10 +147,13 @@ const FeedTab = () => {
   };
 
 
+  //Vanuja
   useEffect(() => {
     fetchPosts();
   }, []);
 
+
+  //Vanuja
   const timeAgo = (date) => {
     const now = new Date();
     const createdDate = new Date(date);
@@ -217,28 +180,39 @@ const FeedTab = () => {
 
     const isVideo = (url) => url.includes(".mp4") || url.includes("video");
 
-    const renderMedia = (url, idx) => (
-      isVideo(url) ? (
+    const renderMedia = (url, idx) => {
+      const handleClick = () => {
+        const items = media.map(m => ({
+          original: m,
+          thumbnail: m
+        }));
+        setGalleryItems(items);
+        setShowGallery(true);
+      };
+
+      return isVideo(url) ? (
         <video
           key={idx}
           src={url}
           controls
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
       ) : (
         <img
           key={idx}
           src={url}
           alt={`media-${idx}`}
-          className="w-full h-full object-cover rounded"
+          onClick={handleClick}
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
         />
-      )
-    );
+      );
+    };
+
 
     const count = media.length;
 
     return (
-      <div className="w-full h-80 rounded overflow-hidden">
+      <div className="w-full h-150 rounded ">
         {count === 1 && (
           <div className="w-full h-full">
             {renderMedia(media[0], 0)}
@@ -253,7 +227,7 @@ const FeedTab = () => {
         )}
 
         {count === 3 && (
-          <div className="grid grid-rows-[2fr_1fr] gap-1 h-full">
+          <div className="grid grid-rows-2 gap-1 h-80">
             <div className="w-full h-full">
               {renderMedia(media[0], 0)}
             </div>
@@ -270,87 +244,7 @@ const FeedTab = () => {
 
   return (
     <div className="tab-content p-4">
-      <ToastContainer position="top-right" autoClose={3000} />
-      {/* Post creation */}
-      <div className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
-        <div
-          onClick={toggleExpand}
-          className="text-xl font-semibold text-gray-800 flex items-center justify-between cursor-pointer"
-        >
-          <span>Add a Post</span>
-          <span className="text-gray-600">
-            {expanded ? <FaChevronUp size={20} /> : <FaChevronDown size={20} />}
-          </span>
-        </div>
-
-        {expanded && (
-          <>
-            <textarea
-              placeholder="Describe your post…"
-              className="w-full border border-gray-300 rounded px-3 py-2 resize-none"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
-              <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded cursor-pointer hover:bg-gray-200">
-                <span>Add Media Files</span>
-                <FaPhotoVideo />
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </label>
-              {mediaFiles.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                  {mediaFiles.map((file, idx) => {
-                    const url = URL.createObjectURL(file);
-                    const isVideo = file.type.includes("video");
-
-                    return isVideo ? (
-                      <video
-                        key={idx}
-                        src={url}
-                        controls
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      <img
-                        key={idx}
-                        src={url}
-                        alt={`preview-${idx}`}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <button
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded self-end flex items-center gap-2 disabled:opacity-60"
-              onClick={handlePost}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z"></path>
-                  </svg>
-                  Posting...
-                </>
-              ) : (
-                "Post"
-              )}
-            </button>
-          </>
-        )}
-
-      </div>
+      <SkillShareForm onPostSuccess={fetchPosts} />
       <button
         className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-center font-medium"
         style={{ width: '160px', alignSelf: 'flex-end' }}
@@ -359,7 +253,7 @@ const FeedTab = () => {
         Manage Posts
       </button>
 
-
+      {/* Post list - vanuja */}
       {posts.length === 0 ? (
         <div className="text-center text-gray-500 text-lg font-medium mt-10">
           No posts yet 💤
@@ -369,9 +263,12 @@ const FeedTab = () => {
           <div key={post.id} className="bg-white shadow-md rounded-lg p-4 space-y-4 mb-6">
             {/* Header */}
             <div className="flex items-center space-x-3">
-              <img src={`https://i.pravatar.cc/150?u=${post.userId}`} alt="User" className="w-10 h-10 rounded-full" />
+              <img
+                src={post.profilePicture || `https://i.pravatar.cc/150?u=${post.userId}`}
+                alt={post.uname}
+                className="w-10 h-10 rounded-full" />
               <div>
-                <div className="font-semibold text-gray-800">{post.uname}</div>
+                <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
                 <div className="text-xs text-gray-500">{timeAgo(post.dateTime)}</div>
               </div>
@@ -383,12 +280,14 @@ const FeedTab = () => {
             {/* Description */}
             <p className="text-gray-700">{post.description}</p>
 
+            {/* Comments & likes -Thejani */}
             <div className="post-footer flex items-center gap-6 mb-4">
               <span
                 className="cursor-pointer text-xl"
-                onClick={handleLikeClick}
+                // onClick={handleLikeClick}
               >
-                {liked ? "💜 Liked" : "🤍 Like"}
+                {/* {liked ? "💜 Liked" : "🤍 Like"} */}
+                <PostReactions postId={post.id} />
               </span>
               <span
                 onClick={() => {
@@ -419,6 +318,8 @@ const FeedTab = () => {
                       comment={comment}
                       onDelete={handleDeleteComment}
                       onEdit={handleEditComment}
+                      user={user}
+                      postOwnerId={post.userId}
                     />
 
                   ))}
@@ -447,6 +348,25 @@ const FeedTab = () => {
             )}
           </div>
         )))}
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-full max-w-3xl relative p-5">
+            <button
+              className="absolute top-2 right-2 text-gray-700 text-lg font-bold"
+              onClick={() => setShowGallery(false)}
+            >
+              &times;
+            </button>
+            <ImageGallery
+              items={galleryItems}
+              showThumbnails={true}
+              showFullscreenButton={false}
+              showPlayButton={false}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
@@ -454,70 +374,70 @@ const FeedTab = () => {
 export default FeedTab;
 
 // CommentItem component inside same file
-const CommentItem = ({ comment, onDelete, onEdit }) => {
+const CommentItem = ({ comment, onEdit, onDelete, user, postOwnerId }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(comment.text);
+  const [editedText, setEditedText] = useState(comment.text);
 
-  console.log('Comment inside CommentItem:', comment);
+  const isCommentAuthor = user?.id === comment.userId;
+  const isPostOwner = user?.id === postOwnerId;
 
-  const handleSave = async () => {
-    await onEdit(comment.id, editText);
+  const handleSaveEdit = () => {
+    onEdit(comment.id, editedText);
     setIsEditing(false);
   };
 
   return (
-    <div className="flex items-start gap-2">
-      <div className="flex-1">
-        <strong className="text-sm text-gray-700">
-          {comment.userName || 'User'}
-        </strong>
-
+    <div className="bg-gray-100 p-3 rounded-md flex justify-between items-start">
+      <div>
+        <div className="font-semibold">{comment.userName}</div>
         {isEditing ? (
-          <div className="flex items-center gap-2 mt-1">
+          <>
             <input
-              className="flex-1 border rounded-md p-1 text-sm"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              className="border rounded px-2 py-1 mt-1"
             />
-            <button
-              onClick={handleSave}
-              className="text-green-500 hover:underline text-sm"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setEditText(comment.text);
-              }}
-              className="text-gray-400 hover:underline text-sm"
-            >
-              Cancel
-            </button>
-          </div>
+            <div className="flex gap-2 mt-1">
+              <button
+                className="text-blue-600 text-sm"
+                onClick={handleSaveEdit}
+              >
+                Save
+              </button>
+              <button
+                className="text-gray-500 text-sm"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditedText(comment.text);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </>
         ) : (
-          <p className="text-sm mt-1">{comment.text}</p>
+          <p className="text-gray-800">{comment.text}</p>
         )}
       </div>
 
-      {!isEditing && (
-        <div className="flex gap-2">
+      <div className="flex gap-2 ml-2">
+        {isCommentAuthor && (
           <button
+            className="text-blue-500 hover:text-blue-700"
             onClick={() => setIsEditing(true)}
-            className="text-blue-500 hover:text-blue-700 text-sm"
           >
-            ✏️
+            <FaPenAlt size={14} />
           </button>
+        )}
+        {(isCommentAuthor || isPostOwner) && (
           <button
-            onClick={async () => await onDelete(comment.id)}
-            className="text-red-500 hover:text-red-700 text-sm"
+            className="text-red-500 hover:text-red-700"
+            onClick={() => onDelete(comment.id)}
           >
-            🗑️
+            <FaTrash size={14} />
           </button>
-
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
-

@@ -47,9 +47,6 @@ public class ProgressUpdateController {
         return service.updateProgressUpdate(id, dto);
     }
     
-    
-
-    
     @DeleteMapping("/{id}")
     public String deleteProgressUpdate(@PathVariable String id) {
     boolean deleted = service.deleteProgressUpdate(id);

@@ -41,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/follow/**").permitAll()
                         .requestMatchers("/api/progressupdates/**").permitAll()
                         .requestMatchers("/api/skill-sharing/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
+                        .requestMatchers("/api/reactions/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
@@ -67,7 +69,6 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         // ✅ These headers are commonly required for authentication and JSON requests
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
-        config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // Required to allow cookies/session sharing
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

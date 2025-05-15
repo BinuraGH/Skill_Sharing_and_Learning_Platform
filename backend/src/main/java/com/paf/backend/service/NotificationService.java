@@ -1,15 +1,38 @@
 package com.paf.backend.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.paf.backend.document.Notification;
+import com.paf.backend.dto.NotificationDto;
+import com.paf.backend.repository.NotificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+    private final NotificationRepository repository;
 
-    public void notifyPlanCompletion(String userId, String planTitle) {
-        logger.info("📣 Notification: User '{}' has completed the plan '{}'", userId, planTitle);
+    public Notification createNotification(NotificationDto dto) {
+        Notification notification = new Notification();
+        notification.setUserId(dto.getUserId());
+        notification.setType(dto.getType());
+        notification.setMessage(dto.getMessage());
+        notification.setPostId(dto.getPostId());
+        notification.setTimestamp(LocalDateTime.now().toString());
+        return repository.save(notification);
+    }
+
+    public List<Notification> getNotificationsForUser(String userId) {
+        return repository.findByUserIdOrderByTimestampDesc(userId);
+    }
+
+    public Notification markAsRead(String id) {
+        Notification notification = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notification not found"));
+        notification.setRead(true);
+        return repository.save(notification);
     }
 }
