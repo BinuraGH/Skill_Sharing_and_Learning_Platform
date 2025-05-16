@@ -1,3 +1,4 @@
+// Components/LearningProgressForm.jsx
 import { useState, useEffect } from 'react';
 
 const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
@@ -5,25 +6,23 @@ const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
     title: '',
     caption: '',
     status: 'Draft',
-    imgLink: '',
-    likedBy: []
+    imgLink: ''
   });
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        title: initialData.title,
-        caption: initialData.caption,
-        status: initialData.status,
-        imgLink: initialData.imgLink.join(', '),
-        likedBy: []
+        title: initialData.title || '',
+        caption: initialData.caption || '',
+        status: initialData.status || 'Draft',
+        imgLink: (initialData.imgLink || []).join(', ')
       });
     }
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
@@ -33,7 +32,10 @@ const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
     e.preventDefault();
     const progressUpdate = {
       ...formData,
-      imgLink: formData.imgLink.split(',').map(link => link.trim()).filter(link => link),
+      imgLink: formData.imgLink
+        .split(',')
+        .map((link) => link.trim())
+        .filter(Boolean)
     };
     onSubmit(progressUpdate);
   };

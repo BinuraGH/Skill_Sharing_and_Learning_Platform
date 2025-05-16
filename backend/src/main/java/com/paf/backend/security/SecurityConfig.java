@@ -34,16 +34,17 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 🔹 Add this here
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/all-users").permitAll()
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                        .requestMatchers("/api/comments/**").permitAll()
-                        .requestMatchers("/api/plans/**").permitAll()
-                        .requestMatchers("/api/follow/**").permitAll()
-                        .requestMatchers("/api/progressupdates/**").permitAll()
-                        .requestMatchers("/api/skill-sharing/**").permitAll()
-                        .requestMatchers("/api/notifications/**").permitAll()
-                        .requestMatchers("/api/reactions/**").permitAll()
-                        .anyRequest().authenticated())
+                    .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/logout", "/api/auth/all-users").permitAll()
+                    .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                    .requestMatchers("/api/comments/**").permitAll()
+                    .requestMatchers("/api/plans/**").permitAll()
+                    .requestMatchers("/api/follow/**").permitAll()
+                    .requestMatchers("/api/progressupdates/**").permitAll()
+                    .requestMatchers("/api/skill-sharing/**").permitAll()
+                    .requestMatchers("/api/notifications/**").permitAll()
+                    .requestMatchers("/api/reactions/**").permitAll()
+                    .anyRequest().authenticated()
+                )
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
