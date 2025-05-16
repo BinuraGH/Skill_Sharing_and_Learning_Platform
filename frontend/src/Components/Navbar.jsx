@@ -9,7 +9,6 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [lastSeenNotificationIds, setLastSeenNotificationIds] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -43,54 +42,50 @@ const Navbar = () => {
   }, []);
 
   // Poll notifications
-  useEffect(() => {
-    let interval;
-
-    const fetchNotifications = async () => {
-      try {
-        if (user?.id) {
-          const res = await axios.get(`http://localhost:8080/api/notifications/${user.id}`);
-          const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-          setNotifications(sorted);
-        }
-      } catch (err) {
-        console.error('Error fetching notifications:', err);
-      }
-    };
-
-    if (user?.id) {
-      fetchNotifications();
-      interval = setInterval(fetchNotifications, 10000);
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (!showNotifications) {
+      axios.get(`http://localhost:8080/api/notifications/${user.id}`).then((res) => {
+        const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setNotifications(sorted); // ✅ only update if showNotifications is false
+      });
     }
+  }, 10000);
 
-    return () => clearInterval(interval);
-  }, [user]);
+  return () => clearInterval(interval);
+}, [user, showNotifications]);
+
+
 
   // Bell click handler
   const handleBellClick = async () => {
-    const isOpening = !showNotifications;
-    setShowNotifications(isOpening);
+  const isOpening = !showNotifications;
+  setShowNotifications(isOpening);
 
-    if (isOpening) {
-      const unreadCommentIds = notifications
-        .filter(n => !n.isRead && (n.type === 'comment' || n.type === 'follow' || n.type === 'reaction' || n.type === 'planComplete'))
-        .map(n => n.id);
+  if (isOpening) {
+    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
 
-      setLastSeenNotificationIds(unreadCommentIds);
-
-      if (unreadCommentIds.length > 0) {
+    if (unreadIds.length > 0) {
+      try {
         await Promise.all(
-          unreadCommentIds.map(id =>
+          unreadIds.map(id =>
             axios.patch(`http://localhost:8080/api/notifications/${id}/read`)
           )
         );
 
+        // ✅ Update locally without overwriting all
         setNotifications(prev =>
-          prev.map(n => unreadCommentIds.includes(n.id) ? { ...n, isRead: true } : n)
+          prev.map(n =>
+            unreadIds.includes(n.id) ? { ...n, isRead: true } : n
+          )
         );
+      } catch (err) {
+        console.error("Error marking as read:", err);
       }
     }
-  };
+  }
+};
+
   const timeAgo = (date) => {
     const now = new Date();
     const createdDate = new Date(date);
@@ -168,19 +163,11 @@ const Navbar = () => {
           <FiBell className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
 
           {/* 🔴 Red Badge for new comments only */}
-          {notifications.filter(
-            (n) =>
-              !n.isRead && !lastSeenNotificationIds.includes(n.id)
-          ).length > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-1 rounded-full leading-tight">
-                {
-                  notifications.filter(
-                    (n) =>
-                      !n.isRead && !lastSeenNotificationIds.includes(n.id)
-                  ).length
-                }
-              </span>
-            )}
+          {notifications.filter(n => !n.isRead).length > 0 && (
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-1 rounded-full leading-tight">
+              {notifications.filter(n => !n.isRead).length}
+            </span>
+          )}
 
           {showNotifications && (
           <NotificationDropdown

@@ -26,6 +26,7 @@ import com.paf.backend.document.User;
 import com.paf.backend.dto.CurrentUserDTO;
 import com.paf.backend.dto.LoginDTO;
 import com.paf.backend.dto.UserDto;
+import com.paf.backend.dto.UserResponseDto;
 import com.paf.backend.repository.UserRepository;
 
 
@@ -146,17 +147,14 @@ public class AuthService {
 public ResponseEntity<?> getAllUsers() {
     List<User> users = userRepository.findAll();
 
-    List<Map<String, Object>> userList = users.stream()
-        .map(user -> {
-            Map<String, Object> userMap = new HashMap<>();
-            userMap.put("id", user.getId());
-            userMap.put("name", user.getName());
-            userMap.put("email", user.getEmail());
-            userMap.put("profilePicture", user.getProfilePicture());
-            return userMap;
-        })
+    List<UserResponseDto> userList = users.stream()
+        .map(user -> new UserResponseDto(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getProfilePicture()
+        ))
         .collect(Collectors.toList());
-
     return ResponseEntity.ok(userList);
 }
 
