@@ -67,15 +67,23 @@ const FeedTab = () => {
       const commentData = {
         text: newComment[postId],
         userId: user?.id,
-        userName: user?.name,  // ✅ pass this to backend
+        userName: user?.name,
         postId: postId,
-      }; const res = await axios.post('http://localhost:8080/api/comments', commentData);
-      console.log('Comment added:', res.data);
+      };
+
+      const res = await axios.post('http://localhost:8080/api/comments', commentData);
+
+      // Add profileImage manually to match existing DTO
+      const newCommentWithProfile = {
+        ...res.data,
+        profileImage: user?.profilePicture || '', // ✅ add this line
+      };
 
       setPostComments(prev => ({
         ...prev,
-        [postId]: [...(prev[postId] || []), res.data]
+        [postId]: [...(prev[postId] || []), newCommentWithProfile]
       }));
+
 
       setNewComment(prev => ({ ...prev, [postId]: '' }));
     } catch (error) {
@@ -122,13 +130,17 @@ const FeedTab = () => {
 
         for (const postId in updated) {
           updated[postId] = updated[postId].map(c =>
-            c.id === commentId ? res.data : c
+            c.id === commentId
+              ? {
+                  ...res.data,
+                  profileImage: c.profileImage || '', // ✅ Preserve existing image
+                }
+              : c
           );
         }
 
         return updated;
       });
-
     } catch (error) {
       console.error('Error editing comment:', error);
     }
@@ -275,9 +287,15 @@ const FeedTab = () => {
             {/* Header */}
             <div className="flex items-center space-x-3">
               <img
-                src={post.profilePicture || `https://i.pravatar.cc/150?u=${post.userId}`}
+                src={
+                  post.profilePicture && post.profilePicture.trim() !== ''
+                    ? post.profilePicture
+                    : `https://i.pravatar.cc/150?u=${post.userId}`
+                }
                 alt={post.uname}
-                className="w-10 h-10 rounded-full" />
+                className="w-10 h-10 rounded-full object-cover"
+              />
+
               <div>
                 <div className="font-semibold text-gray-800 hover:underline cursor-pointer">{post.uname}</div>
                 <div className="text-sm text-gray-500">Skill Share</div>
@@ -295,7 +313,7 @@ const FeedTab = () => {
             <div className="post-footer flex items-center gap-6 mb-4">
               <span
                 className="cursor-pointer text-xl"
-                // onClick={handleLikeClick}
+              // onClick={handleLikeClick}
               >
                 {/* {liked ? "💜 Liked" : "🤍 Like"} */}
                 <PostReactions postId={post.id} />
@@ -358,7 +376,7 @@ const FeedTab = () => {
                   >
                     😊
                   </button>
-                    <button
+                  <button
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                     onClick={() => handleAddComment(post.id)}
                     disabled={isPosting}
@@ -368,10 +386,10 @@ const FeedTab = () => {
                 </div>
 
                 {showEmojiPicker[post.id] && (
-                <div className="z-10">
-                  <EmojiPicker onEmojiClick={(emojiData,event) => handleEmojiSelect(emojiData, post.id)} />
-                </div>
-              )}
+                  <div className="z-10">
+                    <EmojiPicker onEmojiClick={(emojiData, event) => handleEmojiSelect(emojiData, post.id)} />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -405,67 +423,122 @@ export default FeedTab;
 const CommentItem = ({ comment, onEdit, onDelete, user, postOwnerId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(comment.text);
+  const [showEditEmojiPicker, setShowEditEmojiPicker] = useState(false);
 
   const isCommentAuthor = user?.id === comment.userId;
   const isPostOwner = user?.id === postOwnerId;
 
   const handleSaveEdit = () => {
+    if (!editedText.trim()) return;
     onEdit(comment.id, editedText);
     setIsEditing(false);
+    setShowEditEmojiPicker(false);
+  };
+
+  const handleEmojiSelect = (emojiData) => {
+    setEditedText((prev) => prev + emojiData.emoji);
+  };
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const created = new Date(date);
+    const diff = now - created;
+
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
   };
 
   return (
-    <div className="bg-gray-100 p-3 rounded-md flex justify-between items-start">
-      <div>
-        <div className="font-semibold">{comment.userName}</div>
+    <div className="bg-gray-100 px-4 py-3 rounded-md shadow-sm flex gap-3 items-start hover:bg-gray-50 transition">
+      {/* Avatar */}
+      <img
+        src={
+          comment.profileImage && comment.profileImage.trim() !== ''
+            ? comment.profileImage
+            : `https://i.pravatar.cc/150?u=${comment.userId}`
+        }
+        alt={comment.userName}
+        className="w-10 h-10 rounded-full object-cover"
+      />
+
+      {/* Main content */}
+      <div className="flex-1">
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-sm text-gray-800">{comment.userName}</span>
+          <span className="text-xs text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
+        </div>
+
         {isEditing ? (
           <>
-            <input
-              value={editedText}
-              onChange={(e) => setEditedText(e.target.value)}
-              className="border rounded px-2 py-1 mt-1"
-            />
-            <div className="flex gap-2 mt-1">
+            <div className="relative">
+              <textarea
+                value={editedText}
+                onChange={(e) => setEditedText(e.target.value)}
+                className="w-full border border-gray-300 rounded p-2 mt-2 text-sm resize-none"
+                rows={2}
+                autoFocus
+              />
               <button
-                className="text-blue-600 text-sm"
+                className="absolute bottom-2 right-2 text-xl"
+                onClick={() => setShowEditEmojiPicker((prev) => !prev)}
+              >
+                😊
+              </button>
+              {showEditEmojiPicker && (
+                <div className="z-10 mt-2">
+                  <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData)} />
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <button
                 onClick={handleSaveEdit}
+                className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded"
               >
                 Save
               </button>
               <button
-                className="text-gray-500 text-sm"
                 onClick={() => {
                   setIsEditing(false);
                   setEditedText(comment.text);
+                  setShowEditEmojiPicker(false);
                 }}
+                className="text-sm text-gray-600 hover:underline"
               >
                 Cancel
               </button>
             </div>
           </>
         ) : (
-          <p className="text-gray-800">{comment.text}</p>
+          <p className="text-sm text-gray-700 mt-1">{comment.text}</p>
         )}
       </div>
 
-      <div className="flex gap-2 ml-2">
-        {isCommentAuthor && (
+      {/* Edit/Delete Icons */}
+      {(isCommentAuthor || isPostOwner) && !isEditing && (
+        <div className="flex flex-col gap-2 mt-1 items-center text-gray-500 text-sm">
+          {isCommentAuthor && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="hover:text-blue-600"
+              title="Edit"
+            >
+              <FaPenAlt size={14} />
+            </button>
+          )}
           <button
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => setIsEditing(true)}
-          >
-            <FaPenAlt size={14} />
-          </button>
-        )}
-        {(isCommentAuthor || isPostOwner) && (
-          <button
-            className="text-red-500 hover:text-red-700"
             onClick={() => onDelete(comment.id)}
+            className="hover:text-red-600"
+            title="Delete"
           >
             <FaTrash size={14} />
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

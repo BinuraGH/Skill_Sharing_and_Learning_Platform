@@ -114,13 +114,14 @@ const HomeRightSection = () => {
                   <div className="flex items-center space-x-3">
                     <img
                       src={
-                        user.profilePicture?.trim()
+                        user.profilePicture && user.profilePicture.trim() !== ''
                           ? user.profilePicture
                           : `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`
                       }
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
+
                     <p className="font-medium">{user.name}</p>
                   </div>
                   <button
