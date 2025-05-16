@@ -24,7 +24,7 @@ public class ProgressUpdateService {
                 dto.getUserId(),
                 dto.getTitle(),
                 dto.getCaption(),
-                "In Progress",  // default status
+                dto.getStatus() != null ? dto.getStatus() : "Draft",
                 dto.getImgLink()
         );
 
@@ -46,17 +46,14 @@ public class ProgressUpdateService {
     // ✅ Update a progress update by ID
     public ResponseEntity<?> updateProgressUpdate(String id, ProgressUpdateDto dto) {
         Optional<ProgressUpdate> existingUpdate = repository.findById(id);
-    
+
         if (existingUpdate.isPresent()) {
             ProgressUpdate updateProgress = existingUpdate.get();
-
-            if (dto.getTitle() == null && dto.getCaption() == null && dto.getImgLink() == null) {
-                return new ResponseEntity<>("No fields provided to update", HttpStatus.BAD_REQUEST);
-            }
 
             if (dto.getTitle() != null) updateProgress.setTitle(dto.getTitle());
             if (dto.getCaption() != null) updateProgress.setCaption(dto.getCaption());
             if (dto.getImgLink() != null) updateProgress.setImgLink(dto.getImgLink());
+            if (dto.getStatus() != null) updateProgress.setStatus(dto.getStatus());
 
             return new ResponseEntity<>(repository.save(updateProgress), HttpStatus.OK);
         } else {
