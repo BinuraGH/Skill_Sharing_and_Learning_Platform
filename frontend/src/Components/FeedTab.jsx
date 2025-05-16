@@ -6,6 +6,7 @@ import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
 import { FaPenAlt, FaTrash } from 'react-icons/fa';
 import PostReactions from './PostReactions';
+import EmojiPicker from 'emoji-picker-react';
 
 const FeedTab = () => {
   // const [comments, setComments] = useState([]);
@@ -18,6 +19,8 @@ const FeedTab = () => {
   const [posts, setPosts] = useState([]);
   const [showGallery, setShowGallery] = useState(false);
   const [galleryItems, setGalleryItems] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState({});
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,6 +37,14 @@ const FeedTab = () => {
 
     fetchUser();
   }, []);
+
+  const handleEmojiSelect = (emojiData, postId) => {
+    setNewComment((prev) => ({
+      ...prev,
+      [postId]: (prev[postId] || '') + emojiData.emoji,
+    }));
+  };
+
 
   const fetchComments = async (postId) => {
     try {
@@ -337,6 +348,17 @@ const FeedTab = () => {
                     disabled={isPosting}
                   />
                   <button
+                    className="text-2xl"
+                    onClick={() =>
+                      setShowEmojiPicker((prev) => ({
+                        ...prev,
+                        [post.id]: !prev[post.id],
+                      }))
+                    }
+                  >
+                    😊
+                  </button>
+                    <button
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                     onClick={() => handleAddComment(post.id)}
                     disabled={isPosting}
@@ -344,6 +366,12 @@ const FeedTab = () => {
                     {isPosting ? "Posting..." : "Post"}
                   </button>
                 </div>
+
+                {showEmojiPicker[post.id] && (
+                <div className="z-10">
+                  <EmojiPicker onEmojiClick={(emojiData,event) => handleEmojiSelect(emojiData, post.id)} />
+                </div>
+              )}
               </>
             )}
           </div>
