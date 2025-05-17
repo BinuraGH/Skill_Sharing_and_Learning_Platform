@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import img1 from '../assets/img1.jpg';
 
 const ProgressTab = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const ProgressTab = () => {
         
         {update.imgLink && (
                     <img
-                      src={update.imgLink}
+                      src={img1}
                       alt={update.title || 'Progress Image'}
                       className="w-full h-40 object-cover"
                     />
