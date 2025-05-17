@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.paf.backend.document.ProgressUpdate;
+import com.paf.backend.document.SkillSharing;
 import com.paf.backend.dto.ProgressUpdateDto;
 import com.paf.backend.repository.ProgressUpdateRepository;
 
@@ -31,6 +32,10 @@ public class ProgressUpdateService {
         ProgressUpdate saved = repository.save(progress);
         System.out.println("Inserted Progress Update with ID: " + saved.getId());
         return saved;
+    }
+
+    public List<ProgressUpdate> getAllProgressUpdates() {
+        return repository.findAll();
     }
 
     // ✅ Get all progress updates for a user
