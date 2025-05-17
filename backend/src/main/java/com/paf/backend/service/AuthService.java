@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +20,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
-
 import com.paf.backend.document.User;
 import com.paf.backend.dto.CurrentUserDTO;
 import com.paf.backend.dto.LoginDTO;
 import com.paf.backend.dto.UserDto;
+import com.paf.backend.dto.UserResponseDto;
 import com.paf.backend.repository.UserRepository;
-
-
 
 @Service
 public class AuthService {
@@ -56,13 +53,14 @@ public class AuthService {
         user.setEmail(userDto.getEmail());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRole("USER");
+        user.setBadge("None");
 
         userRepository.save(user);
         return ResponseEntity.ok("User registered successfully.");
     }
 
     public ResponseEntity<?> getCurrentUser(Principal principal) {
-        // ✅ 1. Handle manual login (UsernamePasswordAuthenticationToken)
+        // ✅ 1. Manual login
         if (principal instanceof UsernamePasswordAuthenticationToken) {
             Optional<User> userOptional = userRepository.findByEmail(principal.getName());
 
@@ -73,21 +71,20 @@ public class AuthService {
                         user.getName(),
                         user.getEmail(),
                         user.getRole(),
-                        user.getProfilePicture()
-                        );
-                        
+                        user.getProfilePicture(),
+                        user.getBadge() // ✅ include badge
+                );
                 return ResponseEntity.ok(response);
             }
         }
 
-        // ✅ 2. Handle Google OAuth2 login (OAuth2AuthenticationToken)
+        // ✅ 2. Google OAuth login
         if (principal instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2User oauthUser = oauthToken.getPrincipal();
             String email = oauthUser.getAttribute("email");
             String name = oauthUser.getAttribute("name");
             String picture = oauthUser.getAttribute("picture");
-            
-            // ✅ Optional: If your DB has Google users too, you can fetch ID/role
+
             Optional<User> userOptional = userRepository.findByEmail(email);
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
@@ -96,21 +93,18 @@ public class AuthService {
                         user.getName(),
                         user.getEmail(),
                         user.getRole(),
-                        user.getProfilePicture()
-                        );
+                        user.getProfilePicture(),
+                        user.getBadge()
+                );
                 return ResponseEntity.ok(response);
             }
 
-            // If user is not in DB (OAuth-only user), return minimal profile
-            return ResponseEntity.ok(Map.of(
-                    "name", name,
-                    "email", email,
-                    "role", "OAUTH_USER",
-                    "profilePicture", picture
-                    ));
+            // Return minimal profile if Google-only
+            return ResponseEntity.ok(new CurrentUserDTO(
+                    null, name, email, "OAUTH_USER", picture, "None"
+            ));
         }
 
-        // ❌ Invalid session or unknown auth method
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
     }
 
@@ -127,38 +121,26 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
 
-        // ✅ Create authenticated session manually using Spring Security
-        // Load user details from custom UserDetailsService
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
-
-        // Create an authenticated token (without checking again here because we already
-        // did)
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
-
-        // ✅ Store it in the Spring Security context — this mimics OAuth2 login behavior
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // You can return a token or session object here
         return ResponseEntity.ok("Login successful");
     }
 
-public ResponseEntity<?> getAllUsers() {
-    List<User> users = userRepository.findAll();
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = userRepository.findAll();
 
-    List<Map<String, Object>> userList = users.stream()
-        .map(user -> {
-            Map<String, Object> userMap = new HashMap<>();
-            userMap.put("id", user.getId());
-            userMap.put("name", user.getName());
-            userMap.put("email", user.getEmail());
-            userMap.put("profilePicture", user.getProfilePicture());
-            return userMap;
-        })
-        .collect(Collectors.toList());
+        List<UserResponseDto> userList = users.stream()
+                .map(user -> new UserResponseDto(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getProfilePicture()
+                ))
+                .collect(Collectors.toList());
 
-    return ResponseEntity.ok(userList);
-}
-
-    
+        return ResponseEntity.ok(userList);
+    }
 }
