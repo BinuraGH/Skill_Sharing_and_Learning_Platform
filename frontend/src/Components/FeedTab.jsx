@@ -132,9 +132,9 @@ const FeedTab = () => {
           updated[postId] = updated[postId].map(c =>
             c.id === commentId
               ? {
-                  ...res.data,
-                  profileImage: c.profileImage || '', // ✅ Preserve existing image
-                }
+                ...res.data,
+                profileImage: c.profileImage || '', // ✅ Preserve existing image
+              }
               : c
           );
         }
@@ -218,7 +218,7 @@ const FeedTab = () => {
           key={idx}
           src={url}
           controls
-          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-95 cursor-pointer"
         />
       ) : (
         <img
@@ -226,7 +226,7 @@ const FeedTab = () => {
           src={url}
           alt={`media-${idx}`}
           onClick={handleClick}
-          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-105 cursor-pointer"
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-95 cursor-pointer"
         />
       );
     };
@@ -237,7 +237,7 @@ const FeedTab = () => {
     return (
       <div className="w-full h-150 rounded ">
         {count === 1 && (
-          <div className="w-full h-full">
+          <div className="w-150 h-80">
             {renderMedia(media[0], 0)}
           </div>
         )}
@@ -250,8 +250,8 @@ const FeedTab = () => {
         )}
 
         {count === 3 && (
-          <div className="grid grid-rows-2 gap-1 h-80">
-            <div className="w-full h-full">
+          <div className="grid grid gap-1 h-full">
+            <div className="w-150 h-80">
               {renderMedia(media[0], 0)}
             </div>
             <div className="grid grid-cols-2 gap-1 h-full">
