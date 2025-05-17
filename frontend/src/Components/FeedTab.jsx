@@ -271,7 +271,7 @@ const FeedTab = () => {
       <button
         className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-center font-medium"
         style={{ width: '160px', alignSelf: 'flex-end' }}
-        onClick={() => navigate('/userposts')}
+        onClick={() => navigate('/profile')}
       >
         Manage Posts
       </button>
