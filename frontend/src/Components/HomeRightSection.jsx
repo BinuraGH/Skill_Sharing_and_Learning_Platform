@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 
 const HomeRightSection = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [following, setFollowing] = useState([]);
@@ -106,24 +108,22 @@ const HomeRightSection = () => {
             return (
               <li
                 key={user.id}
-                className={`transition-opacity duration-300 ${
-                  fadingOutUserId === user.id ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                }`}
+                className={`transition-opacity duration-300 ${fadingOutUserId === user.id ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                  }`}
               >
                 <div className="suggested-item flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div
+                    className="flex items-center space-x-3 cursor-pointer"
+                    onClick={() => navigate(`/user/${user.id}`)}
+                  >
                     <img
-                      src={
-                        user.profilePicture && user.profilePicture.trim() !== ''
-                          ? user.profilePicture
-                          : `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`
-                      }
+                      src={user.profilePicture || `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 10}.jpg`}
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
-
-                    <p className="font-medium">{user.name}</p>
+                    <p className="font-medium hover:underline">{user.name}</p>
                   </div>
+
                   <button
                     onClick={() => toggleFollow(user.id)}
                     onMouseEnter={() => setHoveredUserId(user.id)}

@@ -43,6 +43,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/skill-sharing/**").permitAll()
                     .requestMatchers("/api/notifications/**").permitAll()
                     .requestMatchers("/api/reactions/**").permitAll()
+                    .requestMatchers("/api/auth/user/**").permitAll() 
                     .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
