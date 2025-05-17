@@ -2,8 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import Navbar from '../Components/Navbar';
 import ShowUserPosts from './ShowUserPosts';
+import { useParams } from 'react-router-dom';
+
 
 const ProfilePage = () => {
+  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -13,6 +16,19 @@ const ProfilePage = () => {
 
   const followerTimeoutRef = useRef(null);
   const followingTimeoutRef = useRef(null);
+
+  const getBadgeColor = (badge) => {
+    switch (badge) {
+      case 'Gold':
+        return 'bg-yellow-300 text-yellow-900';
+      case 'Silver':
+        return 'bg-gray-300 text-gray-800';
+      case 'Bronze':
+        return 'bg-amber-200 text-amber-900';
+      default:
+        return 'bg-gray-200 text-gray-500';
+    }
+  };
 
   // 🧠 Handle popup hover delay
   const handleFollowerMouseEnter = () => {
@@ -41,14 +57,24 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserAndFollows = async () => {
       try {
-        const res = await axios.get('http://localhost:8080/api/auth/me', { withCredentials: true });
-        const currentUser = res.data;
-        setUser(currentUser);
+        let targetUser;
 
-        const followerRes = await axios.get(`http://localhost:8080/api/follow/${currentUser.id}/followers`);
+        if (userId) {
+          // Viewing someone else's profile
+          const res = await axios.get(`http://localhost:8080/api/auth/user/${userId}`);
+          targetUser = res.data;
+        } else {
+          // Viewing own profile
+          const res = await axios.get('http://localhost:8080/api/auth/me', { withCredentials: true });
+          targetUser = res.data;
+        }
+
+        setUser(targetUser);
+
+        const followerRes = await axios.get(`http://localhost:8080/api/follow/${targetUser.id}/followers`);
         setFollowers(followerRes.data);
 
-        const followingRes = await axios.get(`http://localhost:8080/api/follow/${currentUser.id}/following`);
+        const followingRes = await axios.get(`http://localhost:8080/api/follow/${targetUser.id}/following`);
         setFollowing(followingRes.data);
       } catch (err) {
         console.error('Failed to fetch user or follow data:', err);
@@ -56,7 +82,8 @@ const ProfilePage = () => {
     };
 
     fetchUserAndFollows();
-  }, []);
+  }, [userId]);
+
 
   // ❌ Unfollow a user
   const handleUnfollow = async (followedId) => {
@@ -94,7 +121,17 @@ const ProfilePage = () => {
                   alt="Avatar"
                   className="w-28 h-28 rounded-full border-4 border-white -mt-16 shadow-lg"
                 />
-                <h2 className="text-xl font-bold mt-4">{user?.name || 'Loading...'}</h2>
+                <div className="flex items-center gap-2 mt-4">
+                  <h2 className="text-xl font-bold">{user?.name || 'Loading...'}</h2>
+                  {user?.badge && (
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${getBadgeColor(user.badge)}`}
+                      title="Badge earned by commenting"
+                    >
+                      {user.badge}
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500">{user?.email || 'Loading...'}</p>
               </div>
 
@@ -177,11 +214,10 @@ const ProfilePage = () => {
                                 </div>
                                 <button
                                   onClick={() => handleUnfollow(f.followedId)}
-                                  className={`text-xs px-2 py-0.5 rounded ${
-                                    isHovered
-                                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                      : 'bg-gray-200 text-gray-600'
-                                  }`}
+                                  className={`text-xs px-2 py-0.5 rounded ${isHovered
+                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                    : 'bg-gray-200 text-gray-600'
+                                    }`}
                                 >
                                   {isHovered ? 'Unfollow' : 'Following'}
                                 </button>
@@ -223,7 +259,7 @@ const ProfilePage = () => {
 
           {/* Posts */}
           <div className="lg:col-span-2">
-            <ShowUserPosts />
+            <ShowUserPosts userId={user?.id} />
           </div>
         </div>
       </div>
@@ -232,4 +268,3 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
-
