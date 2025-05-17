@@ -205,7 +205,14 @@ useEffect(() => {
           {dropdownOpen && (
             <div className="absolute right-0 top-12 w-56 bg-white border rounded-md shadow-md z-50 animate-fade-slide">
               <div className="p-4 border-b text-sm">
-                <p className="font-medium">{user?.name}</p>
+                <div className="flex items-center gap-2">
+                    <p className="font-medium">{user?.name}</p>
+                    {user?.badge && (
+                      <span className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full">
+                        {user.badge}
+                      </span>
+                    )}
+                  </div>
                 <p className="text-gray-500">{user?.email}</p>
               </div>
               <ul className="text-sm">

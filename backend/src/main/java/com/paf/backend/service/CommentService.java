@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -78,18 +77,18 @@ public class CommentService {
             comment.setUpdatedAt(new Date());
             Comment saved = commentRepository.save(comment);
 
-            Optional<SkillSharing> skillPostOpt = skillShareRepository.findById(comment.getPostId());
+            // 🧠 Update user badge based on comment count
+            updateUserBadge(comment.getUserId());
 
+            Optional<SkillSharing> skillPostOpt = skillShareRepository.findById(comment.getPostId());
             if (skillPostOpt.isPresent()) {
                 SkillSharing post = skillPostOpt.get();
-
                 if (!post.getUserId().equals(comment.getUserId())) {
                     NotificationDto dto = new NotificationDto();
                     dto.setUserId(post.getUserId());
                     dto.setType("comment");
                     dto.setMessage(comment.getUserName() + " commented on your post.");
                     dto.setPostId(post.getId());
-
                     notificationService.createNotification(dto);
                 }
             }
@@ -118,6 +117,29 @@ public class CommentService {
             return new ResponseEntity<>("Success deleted with " + id, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 🎖️ Helper: Update User Badge
+    private void updateUserBadge(String userId) {
+        long commentCount = commentRepository.findAll().stream()
+                .filter(c -> userId.equals(c.getUserId()))
+                .count();
+
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String badge;
+
+            if (commentCount >= 20) badge = "Gold";
+            else if (commentCount >= 10) badge = "Silver";
+            else if (commentCount >= 5) badge = "Bronze";
+            else badge = "None";
+
+            if (!badge.equals(user.getBadge())) {
+                user.setBadge(badge);
+                userRepository.save(user);
+            }
         }
     }
 }

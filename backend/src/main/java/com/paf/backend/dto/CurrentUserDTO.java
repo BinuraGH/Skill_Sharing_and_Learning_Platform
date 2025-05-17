@@ -13,5 +13,5 @@ public class CurrentUserDTO {
     private String email;
     private String role;
     private String profilePicture;
-
+    private String badge; // 🆕 Added
 }
