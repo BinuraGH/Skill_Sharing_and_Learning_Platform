@@ -51,11 +51,10 @@ const ProgressUpdateCard = ({ update, onEdit, onDelete, showActions = true }) =>
               {title || "Untitled Update"}
             </h3>
             <span
-              className={`text-xs px-2 py-1 rounded-full ${
-                status === "Completed"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
+              className={`text-xs px-2 py-1 rounded-full ${status === "Completed"
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+                }`}
             >
               {status}
             </span>
