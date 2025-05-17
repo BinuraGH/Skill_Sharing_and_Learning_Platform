@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paf.backend.document.ProgressUpdate;
+import com.paf.backend.document.SkillSharing;
 import com.paf.backend.dto.ProgressUpdateDto;
 import com.paf.backend.service.ProgressUpdateService;
 
@@ -30,6 +31,11 @@ public class ProgressUpdateController {
     @PostMapping
     public ProgressUpdate createProgressUpdate (@RequestBody ProgressUpdateDto dto) {
         return service.createProgressUpdate(dto);
+    }
+
+    @GetMapping
+    public List<ProgressUpdate> getAllProgressUpdates() {
+        return service.getAllProgressUpdates();
     }
 
     @GetMapping("/user/{userId}")

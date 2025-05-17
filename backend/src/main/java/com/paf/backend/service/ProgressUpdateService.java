@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.paf.backend.document.ProgressUpdate;
+import com.paf.backend.document.SkillSharing;
 import com.paf.backend.dto.ProgressUpdateDto;
 import com.paf.backend.repository.ProgressUpdateRepository;
 
@@ -24,13 +25,17 @@ public class ProgressUpdateService {
                 dto.getUserId(),
                 dto.getTitle(),
                 dto.getCaption(),
-                "In Progress",  // default status
+                dto.getStatus() != null ? dto.getStatus() : "Draft",
                 dto.getImgLink()
         );
 
         ProgressUpdate saved = repository.save(progress);
         System.out.println("Inserted Progress Update with ID: " + saved.getId());
         return saved;
+    }
+
+    public List<ProgressUpdate> getAllProgressUpdates() {
+        return repository.findAll();
     }
 
     // ✅ Get all progress updates for a user
@@ -46,17 +51,14 @@ public class ProgressUpdateService {
     // ✅ Update a progress update by ID
     public ResponseEntity<?> updateProgressUpdate(String id, ProgressUpdateDto dto) {
         Optional<ProgressUpdate> existingUpdate = repository.findById(id);
-    
+
         if (existingUpdate.isPresent()) {
             ProgressUpdate updateProgress = existingUpdate.get();
-
-            if (dto.getTitle() == null && dto.getCaption() == null && dto.getImgLink() == null) {
-                return new ResponseEntity<>("No fields provided to update", HttpStatus.BAD_REQUEST);
-            }
 
             if (dto.getTitle() != null) updateProgress.setTitle(dto.getTitle());
             if (dto.getCaption() != null) updateProgress.setCaption(dto.getCaption());
             if (dto.getImgLink() != null) updateProgress.setImgLink(dto.getImgLink());
+            if (dto.getStatus() != null) updateProgress.setStatus(dto.getStatus());
 
             return new ResponseEntity<>(repository.save(updateProgress), HttpStatus.OK);
         } else {

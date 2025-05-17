@@ -1,17 +1,15 @@
 package com.paf.backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CurrentUserDTO {
+public class UserResponseDto {
     private String id;
     private String name;
     private String email;
-    private String role;
     private String profilePicture;
-    private String badge; // 🆕 Added
+
+    // ✅ Optional: add badge or role if needed later
 }

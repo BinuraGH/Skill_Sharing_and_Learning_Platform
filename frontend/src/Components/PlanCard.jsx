@@ -1,22 +1,39 @@
-import React, { useState } from "react";
+import axios from 'axios';
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import EmojiReactions from "../Components/EmojiReactions";
+import PostReactions from './PostReactions';
 
 const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const navigate = useNavigate();
-  const [reaction, setReaction] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          withCredentials: true,
+        });
+        setUser(res.data);
+        console.log("Data dee", res.data);
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   if (!plan) return null;
 
   const {
-    _id = plan.id,
+    id = plan.id,
     title,
     description,
     thumbnailUrl,
     topics = [],
   } = plan;
 
-  const planId = _id;
+  const planId = id;
 
   const getYoutubeThumbnail = (url) => {
     try {
@@ -37,40 +54,40 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
-      e.target.closest(".delete-btn") ||
-      e.target.closest(".emoji-wrapper")
+      e.target.closest(".delete-btn")
     ) return;
     navigate(`/plans/${planId}`);
   };
 
   return (
-    <div
-      onClick={handleCardClick}
-      className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
-    >
-      <img
-        src={imageToShow}
-        alt={title || "Course Thumbnail"}
-        className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
-      />
+    <div className="flex flex-col items-center space-y-2">
+      {/* Plan Card */}
+      <div
+        onClick={handleCardClick}
+        className="w-full max-w-xs h-[440px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
+      >
+        <img
+          src={imageToShow}
+          alt={title || "Course Thumbnail"}
+          className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
+        />
 
-      <div className="p-4 flex flex-col gap-2">
-        <h3 className="text-lg font-semibold text-gray-800 truncate">{title || "Untitled Course"}</h3>
-        <p className="text-sm text-gray-600">{description || "No description provided."}</p>
+        <div className="p-4 flex flex-col gap-2">
+          <h3 className="text-lg font-semibold text-gray-800 truncate">{title || "Untitled Course"}</h3>
+          <p className="text-sm text-gray-600">{description || "No description provided."}</p>
 
-        {topics.length > 0 && (
-          <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 max-h-20 overflow-hidden">
-            {topics.slice(0, 3).map((topic, idx) => (
-              <li key={`${planId}-topic-${idx}`} className="truncate">
-                {topic.title || `Topic ${idx + 1}`}
-              </li>
-            ))}
-          </ul>
-        )}
+          {topics.length > 0 && (
+            <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 max-h-20 overflow-hidden">
+              {topics.slice(0, 3).map((topic, idx) => (
+                <li key={`${planId}-topic-${idx}`} className="truncate">
+                  {topic.title || `Topic ${idx + 1}`}
+                </li>
+              ))}
+            </ul>
+          )}
 
-        <div className="pt-4">
-          {showActions ? (
-            <div className="flex gap-2">
+          {showActions && (
+            <div className="pt-4 flex gap-2">
               <button
                 className="edit-btn flex-1 text-blue-600 border border-blue-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-50 transition"
                 onClick={(e) => {
@@ -84,25 +101,22 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
                 className="delete-btn flex-1 text-red-600 border border-red-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-50 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(planId); // ✅ Only pass the ID
+                  onDelete(planId);
                 }}
               >
                 🗑 Delete
               </button>
             </div>
-          ) : (
-            <div className="emoji-wrapper mt-2" onClick={(e) => e.stopPropagation()}>
-              <EmojiReactions reaction={reaction} setReaction={setReaction} />
-            </div>
           )}
         </div>
-
-        {!showActions && reaction && (
-          <p className="text-sm text-center text-gray-500 mt-2">
-            You reacted with <span className="text-lg">{reaction}</span>
-          </p>
-        )}
       </div>
+
+      {/* Reactions (only show when not in edit/delete mode) */}
+      {!showActions && (
+        <div className="mt-1">
+          <PostReactions postId={plan.id} />
+        </div>
+      )}
     </div>
   );
 };

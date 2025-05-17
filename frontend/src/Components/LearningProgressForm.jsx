@@ -1,47 +1,96 @@
+// Components/LearningProgressForm.jsx
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
+const LearningProgressForm = ({ initialData, onCancel,onPostSuccess }) => {
   const [formData, setFormData] = useState({
     title: '',
     caption: '',
     status: 'Draft',
-    imgLink: '',
-    likedBy: []
+    imgLink: ''
   });
+  const [user, setUser] = useState(null);
 
+  // Populate form if editing
   useEffect(() => {
     if (initialData) {
       setFormData({
-        title: initialData.title,
-        caption: initialData.caption,
-        status: initialData.status,
-        imgLink: initialData.imgLink.join(', '),
-        likedBy: []
+        title: initialData.title || '',
+        caption: initialData.caption || '',
+        status: initialData.status || 'Draft',
+        imgLink: (initialData.imgLink || []).join(', ')
       });
     }
   }, [initialData]);
 
+  // Fetch logged-in user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          withCredentials: true,
+        });
+        setUser(res.data);
+        console.log("👤 Logged-in User:", res.data);
+      } catch (err) {
+        console.error('❌ Failed to fetch user:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e) => {
+  // Submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const progressUpdate = {
-      ...formData,
-      imgLink: formData.imgLink.split(',').map(link => link.trim()).filter(link => link),
+
+    const newUpdate = {
+      title: formData.title.trim(),
+      caption: formData.caption.trim(),
+      status: formData.status,
+      imgLink: formData.imgLink
+        .split(',')
+        .map(link => link.trim())
+        .filter(link => link !== ''),
+      userId: user?.id,
     };
-    onSubmit(progressUpdate);
+
+    await handleCreateUpdate(newUpdate);
+    if (onPostSuccess) onPostSuccess();
+    
+  };
+
+  // Send POST request to create progress update
+  const handleCreateUpdate = async (newUpdate) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/api/progressupdates',
+        newUpdate,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
+
+      console.log('✅ Progress update created:', response.data);
+    } catch (err) {
+      console.error('❌ Failed to create progress update:', err);
+    }
   };
 
   return (
     <div className="p-6">
       <h3 className="text-2xl font-semibold mb-6 text-gray-800">
-        {initialData ? 'Edit Progress Update' : 'Create Progress Update'}
+        Create Progress Update
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +128,8 @@ const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
             onChange={handleChange}
             className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="Draft">Draft</option>
+            <option value="In Progress">In Progress</option>
+            <option value="On Hold">On Hold</option>
             <option value="Completed">Completed</option>
           </select>
         </div>
@@ -108,7 +158,7 @@ const LearningProgressForm = ({ initialData, onSubmit, onCancel }) => {
             type="submit"
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            {initialData ? 'Update' : 'Create'}
+            Create
           </button>
         </div>
       </form>
