@@ -27,7 +27,6 @@ const ProgressUpdatesTab = () => {
     setShowModal(true);
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 py-10 px-4">
       <div className="max-w-7xl mx-auto">
@@ -37,7 +36,7 @@ const ProgressUpdatesTab = () => {
             onClick={openCreateModal}
             className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition"
           >
-            Create Update
+            Create Progress Update
           </button>
         </div>
 
