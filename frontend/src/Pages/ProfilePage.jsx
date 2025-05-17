@@ -2,8 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import Navbar from '../Components/Navbar';
 import ShowUserPosts from './ShowUserPosts';
+import { useParams } from 'react-router-dom';
+
 
 const ProfilePage = () => {
+  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -54,14 +57,24 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserAndFollows = async () => {
       try {
-        const res = await axios.get('http://localhost:8080/api/auth/me', { withCredentials: true });
-        const currentUser = res.data;
-        setUser(currentUser);
+        let targetUser;
 
-        const followerRes = await axios.get(`http://localhost:8080/api/follow/${currentUser.id}/followers`);
+        if (userId) {
+          // Viewing someone else's profile
+          const res = await axios.get(`http://localhost:8080/api/auth/user/${userId}`);
+          targetUser = res.data;
+        } else {
+          // Viewing own profile
+          const res = await axios.get('http://localhost:8080/api/auth/me', { withCredentials: true });
+          targetUser = res.data;
+        }
+
+        setUser(targetUser);
+
+        const followerRes = await axios.get(`http://localhost:8080/api/follow/${targetUser.id}/followers`);
         setFollowers(followerRes.data);
 
-        const followingRes = await axios.get(`http://localhost:8080/api/follow/${currentUser.id}/following`);
+        const followingRes = await axios.get(`http://localhost:8080/api/follow/${targetUser.id}/following`);
         setFollowing(followingRes.data);
       } catch (err) {
         console.error('Failed to fetch user or follow data:', err);
@@ -69,7 +82,8 @@ const ProfilePage = () => {
     };
 
     fetchUserAndFollows();
-  }, []);
+  }, [userId]);
+
 
   // ❌ Unfollow a user
   const handleUnfollow = async (followedId) => {
@@ -201,8 +215,8 @@ const ProfilePage = () => {
                                 <button
                                   onClick={() => handleUnfollow(f.followedId)}
                                   className={`text-xs px-2 py-0.5 rounded ${isHovered
-                                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                      : 'bg-gray-200 text-gray-600'
+                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                    : 'bg-gray-200 text-gray-600'
                                     }`}
                                 >
                                   {isHovered ? 'Unfollow' : 'Following'}
@@ -245,7 +259,7 @@ const ProfilePage = () => {
 
           {/* Posts */}
           <div className="lg:col-span-2">
-            <ShowUserPosts />
+            <ShowUserPosts userId={user?.id} />
           </div>
         </div>
       </div>
