@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const LearningProgressForm = ({ initialData, onCancel,onPostSuccess }) => {
+const LearningProgressForm = ({ initialData, onCancel, onPostSuccess }) => {
   const [formData, setFormData] = useState({
     title: '',
     caption: '',
@@ -64,13 +64,6 @@ const LearningProgressForm = ({ initialData, onCancel,onPostSuccess }) => {
       userId: user?.id,
     };
 
-    await handleCreateUpdate(newUpdate);
-    if (onPostSuccess) onPostSuccess();
-    
-  };
-
-  // Send POST request to create progress update
-  const handleCreateUpdate = async (newUpdate) => {
     try {
       const response = await axios.post(
         'http://localhost:8080/api/progressupdates',
@@ -82,6 +75,9 @@ const LearningProgressForm = ({ initialData, onCancel,onPostSuccess }) => {
       );
 
       console.log('✅ Progress update created:', response.data);
+
+      if (onPostSuccess) onPostSuccess(response.data); // Pass back created data
+
     } catch (err) {
       console.error('❌ Failed to create progress update:', err);
     }
