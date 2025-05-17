@@ -9,6 +9,8 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -42,49 +44,65 @@ const Navbar = () => {
   }, []);
 
   // Poll notifications
-useEffect(() => {
-  const interval = setInterval(() => {
-    if (!showNotifications) {
-      axios.get(`http://localhost:8080/api/notifications/${user.id}`).then((res) => {
-        const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setNotifications(sorted); // ✅ only update if showNotifications is false
-      });
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!showNotifications) {
+        axios.get(`http://localhost:8080/api/notifications/${user.id}`).then((res) => {
+          const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setNotifications(sorted); // ✅ only update if showNotifications is false
+        });
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user, showNotifications]);
+
+
+  const handleSearchChange = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 1) {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/auth/search-users?query=${query}`);
+        setSearchResults(res.data);
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    } else {
+      setSearchResults([]);
     }
-  }, 10000);
-
-  return () => clearInterval(interval);
-}, [user, showNotifications]);
-
+  };
 
 
   // Bell click handler
   const handleBellClick = async () => {
-  const isOpening = !showNotifications;
-  setShowNotifications(isOpening);
+    const isOpening = !showNotifications;
+    setShowNotifications(isOpening);
 
-  if (isOpening) {
-    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+    if (isOpening) {
+      const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
 
-    if (unreadIds.length > 0) {
-      try {
-        await Promise.all(
-          unreadIds.map(id =>
-            axios.patch(`http://localhost:8080/api/notifications/${id}/read`)
-          )
-        );
+      if (unreadIds.length > 0) {
+        try {
+          await Promise.all(
+            unreadIds.map(id =>
+              axios.patch(`http://localhost:8080/api/notifications/${id}/read`)
+            )
+          );
 
-        // ✅ Update locally without overwriting all
-        setNotifications(prev =>
-          prev.map(n =>
-            unreadIds.includes(n.id) ? { ...n, isRead: true } : n
-          )
-        );
-      } catch (err) {
-        console.error("Error marking as read:", err);
+          // ✅ Update locally without overwriting all
+          setNotifications(prev =>
+            prev.map(n =>
+              unreadIds.includes(n.id) ? { ...n, isRead: true } : n
+            )
+          );
+        } catch (err) {
+          console.error("Error marking as read:", err);
+        }
       }
     }
-  }
-};
+  };
 
   const timeAgo = (date) => {
     const now = new Date();
@@ -138,9 +156,31 @@ useEffect(() => {
         <input
           type="text"
           placeholder="Search developers, skills, topics..."
+          value={searchQuery}
+          onChange={handleSearchChange}
           className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm transition-shadow hover:shadow-sm"
         />
         <FiSearch className="absolute left-3 top-2.5 text-gray-500 text-lg" />
+
+        {/* 🔍 Search Dropdown Results */}
+        {searchResults.length > 0 && (
+          <div className="absolute top-full mt-1 left-0 right-0 bg-white border rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
+            {searchResults.map((result, idx) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  navigate(`/user/${result.id}`);
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="px-4 py-2 text-sm cursor-pointer hover:bg-purple-100 transition"
+              >
+                {result.name}
+              </div>
+            ))}
+
+          </div>
+        )}
       </div>
 
       {/* Icons & Profile */}
@@ -170,16 +210,16 @@ useEffect(() => {
           )}
 
           {showNotifications && (
-          <NotificationDropdown
-            notifications={notifications}
-            timeAgo={timeAgo}
-            fetchNotifications={async () => {
-              const res = await axios.get(`http://localhost:8080/api/notifications/${user.id}`);
-              const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-              setNotifications(sorted);
-            }}
-          />
-        )}
+            <NotificationDropdown
+              notifications={notifications}
+              timeAgo={timeAgo}
+              fetchNotifications={async () => {
+                const res = await axios.get(`http://localhost:8080/api/notifications/${user.id}`);
+                const sorted = res.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                setNotifications(sorted);
+              }}
+            />
+          )}
 
         </div>
 
@@ -206,13 +246,13 @@ useEffect(() => {
             <div className="absolute right-0 top-12 w-56 bg-white border rounded-md shadow-md z-50 animate-fade-slide">
               <div className="p-4 border-b text-sm">
                 <div className="flex items-center gap-2">
-                    <p className="font-medium">{user?.name}</p>
-                    {user?.badge && (
-                      <span className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full">
-                        {user.badge}
-                      </span>
-                    )}
-                  </div>
+                  <p className="font-medium">{user?.name}</p>
+                  {user?.badge && (
+                    <span className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full">
+                      {user.badge}
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500">{user?.email}</p>
               </div>
               <ul className="text-sm">
@@ -228,11 +268,11 @@ useEffect(() => {
                 </li>
                 <li>
                   <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition duration-150"
-                    >
-                      Log out
-                    </button>
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition duration-150"
+                  >
+                    Log out
+                  </button>
 
                 </li>
               </ul>

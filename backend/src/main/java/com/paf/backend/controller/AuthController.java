@@ -69,4 +69,11 @@ public class AuthController {
 
         return ResponseEntity.ok("Logout successful");
     }
+
+    @GetMapping("/search-users")
+    public ResponseEntity<?> searchUsers(@RequestParam("query") String query) {
+        return ResponseEntity.ok(userRepository
+        .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query));
+}
+
 }
