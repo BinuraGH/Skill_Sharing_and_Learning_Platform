@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmojiReactions from "./EmojiReactions";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProgressUpdateCard = () => {
   const navigate = useNavigate();
@@ -54,6 +56,7 @@ const [editData, setEditData] = useState({
   const handleDelete = async () => {
   try {
     await axios.delete(`http://localhost:8080/api/progressupdates/${postToDelete}`);
+    toast.error("Progress Update deleted successfully!");
     setShowConfirm(false);
     setPostToDelete(null);
     
@@ -87,6 +90,7 @@ const [editData, setEditData] = useState({
     };
 
     await axios.put(`http://localhost:8080/api/progressupdates/${editData.id}`, payload);
+    toast.success("Progress Update updated successfully!");
     setShowEditModal(false);
     await fetchUpdates(user.id); // Refresh updates
   } catch (err) {
@@ -99,6 +103,7 @@ const [editData, setEditData] = useState({
     
   return (
     <>
+    <ToastContainer position="top-right" autoClose={3000} />
     {updates.length > 0 ? (
               <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 {updates.map((update) => (
