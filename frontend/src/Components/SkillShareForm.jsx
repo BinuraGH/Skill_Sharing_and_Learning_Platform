@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaChevronDown, FaChevronUp, FaPhotoVideo } from 'react-icons/fa';
-
+import * as Yup from 'yup';
 
 const SkillShareForm = ({ onPostSuccess }) => {
     const [user, setUser] = useState(null); // State to store logged-in user's data
@@ -11,6 +11,8 @@ const SkillShareForm = ({ onPostSuccess }) => {
     const [description, setDescription] = useState("");
     const [mediaFiles, setMediaFiles] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -39,20 +41,30 @@ const SkillShareForm = ({ onPostSuccess }) => {
         setMediaFiles(selectedFiles);
     };
 
+    const postSchema = Yup.object().shape({
+        description: Yup.string()
+            .trim()
+            .required('Description is required.')
+            .min(10, 'Description must be at least 10 characters long.'),
+        mediaFiles: Yup.array()
+            .min(1, 'At least 1 media file is required.')
+            .max(3, 'You can upload up to 3 media files.')
+    });
+
+
     const handlePost = async () => {
-        if (!description.trim()) {
-            toast.error("Description is required.");
-            return;
-        }
-
-        setIsLoading(true);
-        const formData = new FormData();
-        formData.append("userId", user?.id);
-        formData.append("uname", user?.name);
-        formData.append("description", description);
-        mediaFiles.forEach(file => formData.append("media", file));
-
         try {
+            setErrors({}); // Clear previous errors
+
+            await postSchema.validate({ description, mediaFiles }, { abortEarly: false });
+
+            setIsLoading(true);
+            const formData = new FormData();
+            formData.append("userId", user?.id);
+            formData.append("uname", user?.name);
+            formData.append("description", description);
+            mediaFiles.forEach(file => formData.append("media", file));
+
             await axios.post("http://localhost:8080/api/skill-sharing", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
@@ -62,14 +74,22 @@ const SkillShareForm = ({ onPostSuccess }) => {
             setMediaFiles([]);
             setExpanded(false);
             if (onPostSuccess) onPostSuccess();
-            //   fetchPosts();
         } catch (error) {
-            toast.error("Failed to upload post.");
-            console.error("Upload error:", error.response?.data || error.message);
+            if (error.name === "ValidationError") {
+                const newErrors = {};
+                error.inner.forEach(err => {
+                    newErrors[err.path] = err.message;
+                });
+                setErrors(newErrors);
+            } else {
+                toast.error("Failed to upload post.");
+                console.error("Upload error:", error.response?.data || error.message);
+            }
         } finally {
             setIsLoading(false);
         }
     };
+
     return (
         <div><ToastContainer position="top-right" autoClose={3000} />
             {/* Post creation */}
@@ -88,10 +108,11 @@ const SkillShareForm = ({ onPostSuccess }) => {
                     <>
                         <textarea
                             placeholder="Describe your post…"
-                            className="w-full border border-gray-300 rounded px-3 py-2 resize-none"
+                            className="w-full border border-gray-300 rounded px-3 py-1 resize-none"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         ></textarea>
+                        {errors.description && <p style={{ marginTop: -5 }} className="text-red-500 text-sm-bold">{errors.description}</p>}
 
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
                             <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded cursor-pointer hover:bg-gray-200">
@@ -105,6 +126,7 @@ const SkillShareForm = ({ onPostSuccess }) => {
                                     onChange={handleFileChange}
                                 />
                             </label>
+                            {errors.mediaFiles && <p className="text-red-500 text-sm-bold">{errors.mediaFiles}</p>}
                             {mediaFiles.length > 0 && (
                                 <div className="flex flex-wrap gap-3">
                                     {mediaFiles.map((file, idx) => {
@@ -130,6 +152,8 @@ const SkillShareForm = ({ onPostSuccess }) => {
                                 </div>
                             )}
                         </div>
+
+
 
                         <button
                             className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded self-end flex items-center gap-2 disabled:opacity-60"

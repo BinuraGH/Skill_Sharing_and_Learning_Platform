@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
 
 const ShowUserPosts = ({ userId }) => {
   const [posts, setPosts] = useState([]);
@@ -12,6 +14,8 @@ const ShowUserPosts = ({ userId }) => {
   const [updatedDescription, setUpdatedDescription] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryItems, setGalleryItems] = useState([]);
 
   // 🔁 Fetch users (logged-in + profile being viewed)
   useEffect(() => {
@@ -88,39 +92,70 @@ const ShowUserPosts = ({ userId }) => {
 
   const MediaGrid = ({ media }) => {
     if (!media?.length) return null;
+
     const isVideo = (url) => url.includes(".mp4") || url.includes("video");
 
-    const renderMedia = (url, idx) =>
-      isVideo(url) ? (
-        <video key={idx} src={url} controls className="w-full h-full object-cover rounded" />
+    const renderMedia = (url, idx) => {
+      const handleClick = () => {
+        const items = media.map(m => ({
+          original: m,
+          thumbnail: m
+        }));
+        setGalleryItems(items);
+        setShowGallery(true);
+      };
+
+      return isVideo(url) ? (
+        <video
+          key={idx}
+          src={url}
+          controls
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-95 cursor-pointer"
+        />
       ) : (
-        <img key={idx} src={url} alt={`media-${idx}`} className="w-full h-full object-cover rounded" />
+        <img
+          key={idx}
+          src={url}
+          alt={`media-${idx}`}
+          onClick={handleClick}
+          className="w-full h-full object-cover rounded transition-transform duration-300 hover:scale-95 cursor-pointer"
+        />
       );
+    };
+
 
     const count = media.length;
 
     return (
-      <div className="w-full h-80 rounded overflow-hidden">
-        {count === 1 && <div>{renderMedia(media[0], 0)}</div>}
+      <div className="w-full h-150 rounded ">
+        {count === 1 && (
+          <div className="w-150 h-80">
+            {renderMedia(media[0], 0)}
+          </div>
+        )}
+
         {count === 2 && (
           <div className="grid grid-cols-2 gap-1 h-full">
             {renderMedia(media[0], 0)}
             {renderMedia(media[1], 1)}
           </div>
         )}
+
         {count === 3 && (
-          <div className="grid grid-rows-[2fr_1fr] gap-1 h-full">
-            <div>{renderMedia(media[0], 0)}</div>
+          <div className="grid grid gap-1 h-full">
+            <div className="w-150 h-80">
+              {renderMedia(media[0], 0)}
+            </div>
             <div className="grid grid-cols-2 gap-1 h-full">
               {renderMedia(media[1], 1)}
               {renderMedia(media[2], 2)}
             </div>
           </div>
         )}
+
       </div>
     );
   };
-
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -178,6 +213,24 @@ const ShowUserPosts = ({ userId }) => {
               <button onClick={handleDeleteConfirmed} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Yes, Delete</button>
               <button onClick={() => setShowConfirm(false)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-full max-w-3xl relative p-5">
+            <button
+              className="absolute top-2 right-2 text-gray-700 text-lg font-bold"
+              onClick={() => setShowGallery(false)}
+            >
+              &times;
+            </button>
+            <ImageGallery
+              items={galleryItems}
+              showThumbnails={true}
+              showFullscreenButton={false}
+              showPlayButton={false}
+            />
           </div>
         </div>
       )}
