@@ -58,9 +58,9 @@ const ProgressUpdateCard = ({ updates, refreshUpdates }) => {
     <>
       <ToastContainer position="top-right" autoClose={3000} />
       {updates.length > 0 ? (
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-8">
           {updates.map((update) => (
-            <div key={update.id} className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between">
+            <div key={update.id} className="w-full bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between">
               {update.imgLink && (
                 <img
                   src={img1}
