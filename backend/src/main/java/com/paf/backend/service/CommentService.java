@@ -131,9 +131,9 @@ public class CommentService {
             User user = userOpt.get();
             String badge;
 
-            if (commentCount >= 20) badge = "Gold";
-            else if (commentCount >= 10) badge = "Silver";
-            else if (commentCount >= 5) badge = "Bronze";
+            if (commentCount >= 6) badge = "Gold";
+            else if (commentCount >=4) badge = "Silver";
+            else if (commentCount >= 2) badge = "Bronze";
             else badge = "None";
 
             if (!badge.equals(user.getBadge())) {
