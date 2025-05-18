@@ -5,8 +5,11 @@ import PostReactions from './PostReactions';
 
 const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const navigate = useNavigate();
+
+  //Local state to store current logged-in user
   const [user, setUser] = useState(null);
 
+  //Fetch logged-in user once on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -34,6 +37,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   const planId = id;
 
+  //Extract YouTube thumbnail from video URL
   const getYoutubeThumbnail = (url) => {
     try {
       const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -43,10 +47,12 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
     }
   };
 
+  //Determine which thumbnail image to show
   const firstVideoUrl = topics.length > 0 ? topics[0].videoUrl : null;
   const videoThumbnail = firstVideoUrl ? getYoutubeThumbnail(firstVideoUrl) : null;
   const imageToShow = videoThumbnail || (thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image");
 
+  //Handle card click (go to detail view unless clicking edit/delete)
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
@@ -62,11 +68,16 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         onClick={handleCardClick}
         className="w-full max-w-xs h-[460px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
       >
+
+        {/* Thumbnail Image */}
         <img
           src={imageToShow}
           alt={title || "Course Thumbnail"}
           className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
         />
+
+        {/*Plan Content */}
+
 
         <div className="px-4 pt-4 pb-2 flex flex-col gap-2 flex-1 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-800 truncate">{title || "Untitled Course"}</h3>
@@ -81,6 +92,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
               ))}
             </ul>
           )}
+          {/* Show Edit/Delete only if showActions is true */}
 
           {showActions && (
             <div className="pt-4 flex gap-2">
