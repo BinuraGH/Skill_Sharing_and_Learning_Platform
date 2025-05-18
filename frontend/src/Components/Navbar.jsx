@@ -131,7 +131,8 @@ const Navbar = () => {
       await axios.post('http://localhost:8080/api/auth/logout', {}, {
         withCredentials: true,
       });
-      navigate('/');
+      // navigate('/');
+      window.location.href = '/';
     } catch (err) {
       console.error('Error logging out:', err);
     }

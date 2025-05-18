@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
@@ -26,6 +27,9 @@ import com.paf.backend.dto.LoginDTO;
 import com.paf.backend.dto.UserDto;
 import com.paf.backend.dto.UserResponseDto;
 import com.paf.backend.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AuthService {
@@ -108,26 +112,56 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
     }
 
-    public ResponseEntity<?> loginUser(LoginDTO loginDto) {
-        Optional<User> optionalUser = userRepository.findByEmail(loginDto.getEmail());
+    public ResponseEntity<?> loginUser(LoginDTO loginDto, HttpServletRequest request) {
+    Optional<User> optionalUser = userRepository.findByEmail(loginDto.getEmail());
 
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
-
-        User user = optionalUser.get();
-
-        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
-
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        return ResponseEntity.ok("Login successful");
+    if (optionalUser.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
+
+    User user = optionalUser.get();
+
+    if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+    }
+
+    // ✅ Authenticate the user properly using AuthenticationManager
+    UsernamePasswordAuthenticationToken authToken =
+            new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
+    Authentication authentication = authenticationManager.authenticate(authToken);
+
+    // ✅ Set the authentication in context
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    // ✅ Create session and store security context (for session persistence)
+    HttpSession session = request.getSession(true);
+    session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+            SecurityContextHolder.getContext());
+
+    return ResponseEntity.ok("Login successful");
+}
+
+
+    // public ResponseEntity<?> loginUser(LoginDTO loginDto) {
+    //     Optional<User> optionalUser = userRepository.findByEmail(loginDto.getEmail());
+
+    //     if (optionalUser.isEmpty()) {
+    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+    //     }
+
+    //     User user = optionalUser.get();
+
+    //     if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+    //     }
+
+    //     UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
+    //     Authentication auth = new UsernamePasswordAuthenticationToken(
+    //             userDetails, null, userDetails.getAuthorities());
+    //     SecurityContextHolder.getContext().setAuthentication(auth);
+
+    //     return ResponseEntity.ok("Login successful");
+    // }
 
     public ResponseEntity<?> getAllUsers() {
         List<User> users = userRepository.findAll();
