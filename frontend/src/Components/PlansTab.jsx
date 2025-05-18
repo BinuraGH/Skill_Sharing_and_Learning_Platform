@@ -4,9 +4,12 @@ import PlanCard from '../Components/PlanCard';
 
 const PlansTab = () => {
   const navigate = useNavigate();
-  const [plans, setPlans] = useState([]);
-  const [user, setUser] = useState(null); // optional: store user
 
+  //State to store all plans and logged-in user
+  const [plans, setPlans] = useState([]);
+  const [user, setUser] = useState(null);
+
+  //Fetch user and all plans once component mounts
   useEffect(() => {
     const fetchUserAndPlans = async () => {
       try {
@@ -21,7 +24,7 @@ const PlansTab = () => {
         console.log("👤 Logged-in User:", userData);
         setUser(userData); // store if needed
 
-        // 🔹 2. Fetch learning plans
+        // Fetch all learning plans
         const plansRes = await fetch('http://localhost:8080/api/plans');
         if (!plansRes.ok) throw new Error('Failed to fetch plans');
 
@@ -49,7 +52,8 @@ const PlansTab = () => {
           </button>
         </div>
 
-        {/* Plan Cards Grid */}
+        {/* Plan List Display */}
+
         {plans.length > 0 ? (
           <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {plans.map((plan) => (

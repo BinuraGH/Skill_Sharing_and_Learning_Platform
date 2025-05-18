@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 
 const HomeRightSection = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [following, setFollowing] = useState([]);
-  const [hoveredUserId, setHoveredUserId] = useState(null);
-  const [fadingOutUserId, setFadingOutUserId] = useState(null);
+  const [users, setUsers] = useState([]);// All users from backend
+  const [currentUser, setCurrentUser] = useState(null);// Currently logged-in user
+  const [following, setFollowing] = useState([]);// List of followed user IDs
+  const [hoveredUserId, setHoveredUserId] = useState(null);// User ID being hovered (for hover text)
+  const [fadingOutUserId, setFadingOutUserId] = useState(null); // User ID being animated out 
 
-  // 1️⃣ Fetch current logged-in user
+  // Fetch current logged-in user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -24,7 +24,7 @@ const HomeRightSection = () => {
     fetchCurrentUser();
   }, []);
 
-  // 2️⃣ Fetch all users
+  // Fetch all users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -39,7 +39,7 @@ const HomeRightSection = () => {
     fetchUsers();
   }, []);
 
-  // 3️⃣ Fetch following list
+  // Fetch following list for current user
   useEffect(() => {
     const fetchFollowing = async () => {
       if (!currentUser?.id) return;
@@ -56,24 +56,30 @@ const HomeRightSection = () => {
     fetchFollowing();
   }, [currentUser]);
 
-  // 4️⃣ Follow/Unfollow handler
+  //Follow/Unfollow handler
   const toggleFollow = async (followedId) => {
     const isFollowing = following.includes(followedId);
     if (!currentUser?.id) return;
 
     try {
       if (!isFollowing) {
-        setFadingOutUserId(followedId); // Trigger fade
+
+        // Trigger fade-out animation
+        setFadingOutUserId(followedId);
+
+        // Send follow request
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'POST'
         });
 
-        // Delay before removing from UI
+        // Wait for animation and update UI
         setTimeout(() => {
           setFollowing(prev => [...prev, followedId]);
           setFadingOutUserId(null);
         }, 300); // match CSS transition
       } else {
+        // Send unfollow request
+
         await fetch(`http://localhost:8080/api/follow?followerId=${currentUser.id}&followedId=${followedId}`, {
           method: 'DELETE'
         });
@@ -84,7 +90,7 @@ const HomeRightSection = () => {
     }
   };
 
-
+  //Show loading state while fetching data
   if (!currentUser || users.length === 0) {
     return (
       <div className="right-section bg-white rounded-xl p-4 shadow-md">
@@ -98,6 +104,8 @@ const HomeRightSection = () => {
   return (
     <div className="right-section bg-white rounded-xl p-4 shadow-md">
       <h4 className="text-lg font-semibold mb-4">Suggested for you</h4>
+
+      {/* 🔄 Suggested user list */}
       <ul className="suggested-list space-y-4">
         {users
           .filter(user =>
@@ -116,6 +124,7 @@ const HomeRightSection = () => {
                   }`}
               >
                 <div className="suggested-item flex items-center justify-between">
+                  {/* User info */}
                   <div
                     className="flex items-center space-x-3 cursor-pointer"
                     onClick={() => navigate(`/user/${user.id}`)}
@@ -128,6 +137,7 @@ const HomeRightSection = () => {
                     <p className="font-medium hover:underline">{user.name}</p>
                   </div>
 
+                  {/* Follow/Unfollow Button */}
                   <button
                     onClick={() => toggleFollow(user.id)}
                     onMouseEnter={() => setHoveredUserId(user.id)}
@@ -145,7 +155,7 @@ const HomeRightSection = () => {
             );
           })}
       </ul>
-
+      {/* No more suggestions */}
       {users.filter(user => user.id !== currentUser?.id && !following.includes(user.id)).length === 0 && (
         <p className="text-gray-500 text-sm mt-2">No more suggestions</p>
       )}

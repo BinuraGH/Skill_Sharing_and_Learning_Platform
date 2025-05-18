@@ -5,9 +5,9 @@ import { FaCheckCircle } from "react-icons/fa";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
-  const [plan, setPlan] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [plan, setPlan] = useState(null);// Store full plan data
+  const [progress, setProgress] = useState(0);// Track completion percentage
+  const [loggedInUser, setLoggedInUser] = useState(null);// Store logged-in user
 
 
   useEffect(() => {
@@ -19,10 +19,11 @@ const CourseDetailPage = () => {
         const user = await userRes.json();
         setLoggedInUser(user);
 
+        //Fetch plan + progress
         const planRes = await fetch(`http://localhost:8080/api/plans/${id}/progress`);
         const planData = await planRes.json();
         setPlan(planData);
-        setProgress(planData.progressPercentage);
+        setProgress(planData.progressPercentage);// percent from backend
       } catch (err) {
         console.error("❌ Error loading data:", err);
       }
@@ -31,13 +32,13 @@ const CourseDetailPage = () => {
     fetchData();
   }, [id]);
 
-
+  //Mark a topic as complete
   const handleMarkComplete = async (index) => {
     try {
       await fetch(`http://localhost:8080/api/plans/${id}/topics/${index}/complete`, {
         method: 'PATCH',
       });
-
+      // Update topic status in local state
       const updatedTopics = [...plan.topics];
       updatedTopics[index].completed = true;
 
@@ -47,20 +48,20 @@ const CourseDetailPage = () => {
       setPlan(prev => ({ ...prev, topics: updatedTopics }));
       setProgress(newProgress);
 
-     // ✅ Notify on plan completion
-    if (newProgress === 100 && loggedInUser) {
-      await fetch(`http://localhost:8080/api/notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: loggedInUser.id, // ✅ Send to the current user
-          type: 'planComplete',
-          message: `🎉 Congratulations! You've completed the "${plan.title}" learning plan.`,
-        }),
-      });
-    }
+      // Send notification when course is completed
+      if (newProgress === 100 && loggedInUser) {
+        await fetch(`http://localhost:8080/api/notifications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: loggedInUser.id, // ✅ Send to the current user
+            type: 'planComplete',
+            message: `🎉 Congratulations! You've completed the "${plan.title}" learning plan.`,
+          }),
+        });
+      }
 
 
     } catch (err) {
@@ -141,6 +142,7 @@ const CourseDetailPage = () => {
                   <p className="text-sm italic text-gray-400 mb-4">No video available.</p>
                 )}
 
+                {/*Mark Complete Button */}
                 {!topic.completed && (
                   <button
                     onClick={() => handleMarkComplete(index)}
