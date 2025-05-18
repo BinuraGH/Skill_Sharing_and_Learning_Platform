@@ -5,8 +5,11 @@ import PostReactions from './PostReactions';
 
 const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
   const navigate = useNavigate();
+
+  //Local state to store current logged-in user
   const [user, setUser] = useState(null);
 
+  //Fetch logged-in user once on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -19,7 +22,6 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         console.error('Failed to fetch user:', err);
       }
     };
-
     fetchUser();
   }, []);
 
@@ -35,22 +37,22 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
 
   const planId = id;
 
+  //Extract YouTube thumbnail from video URL
   const getYoutubeThumbnail = (url) => {
     try {
-      const match = url.match(
-        /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-      );
+      const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
       return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null;
     } catch {
       return null;
     }
   };
 
+  //Determine which thumbnail image to show
   const firstVideoUrl = topics.length > 0 ? topics[0].videoUrl : null;
   const videoThumbnail = firstVideoUrl ? getYoutubeThumbnail(firstVideoUrl) : null;
-
   const imageToShow = videoThumbnail || (thumbnailUrl?.trim() || "https://via.placeholder.com/280x160.png?text=No+Image");
 
+  //Handle card click (go to detail view unless clicking edit/delete)
   const handleCardClick = (e) => {
     if (
       e.target.closest(".edit-btn") ||
@@ -64,15 +66,20 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
       {/* Plan Card */}
       <div
         onClick={handleCardClick}
-        className="w-full max-w-xs h-[440px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
+        className="w-full max-w-xs h-[460px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-200 border border-gray-200 cursor-pointer flex flex-col justify-between"
       >
+
+        {/* Thumbnail Image */}
         <img
           src={imageToShow}
           alt={title || "Course Thumbnail"}
           className="w-full h-40 object-cover bg-gray-100 border-b border-gray-200"
         />
 
-        <div className="p-4 flex flex-col gap-2">
+        {/*Plan Content */}
+
+
+        <div className="px-4 pt-4 pb-2 flex flex-col gap-2 flex-1 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-800 truncate">{title || "Untitled Course"}</h3>
           <p className="text-sm text-gray-600">{description || "No description provided."}</p>
 
@@ -85,6 +92,7 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
               ))}
             </ul>
           )}
+          {/* Show Edit/Delete only if showActions is true */}
 
           {showActions && (
             <div className="pt-4 flex gap-2">
@@ -111,9 +119,9 @@ const PlanCard = ({ plan, onEdit, onDelete, showActions = true }) => {
         </div>
       </div>
 
-      {/* Reactions (only show when not in edit/delete mode) */}
+      {/* Reactions shown BELOW the card if not in manage mode */}
       {!showActions && (
-        <div className="mt-1">
+        <div className="mt-1" onClick={(e) => e.stopPropagation()}>
           <PostReactions postId={plan.id} />
         </div>
       )}

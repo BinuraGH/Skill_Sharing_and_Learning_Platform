@@ -6,11 +6,13 @@ import ProgressUpdatesTab from '../Components/ProgressUpdatesTab';
 
 
 const ManagePlans = () => {
-  const [activeTab, setActiveTab] = useState('plans');
-  const [showForm, setShowForm] = useState(false);
-  const [plans, setPlans] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('plans');// 'plans' or 'progress'
+  const [showForm, setShowForm] = useState(false);// Whether to show the plan form
+  const [plans, setPlans] = useState([]); // All plans for the logged-in user
+  const [isEditing, setIsEditing] = useState(false);// Edit mode toggle
+  const [user, setUser] = useState(null);// Logged-in user object
+
+  //Default plan form state
   const [formData, setFormData] = useState({
     userId: '', title: '', description: '', status: 'In Progress',
     thumbnailUrl: '', courseDescription: '', updatedPlanId: '',
@@ -18,6 +20,7 @@ const ManagePlans = () => {
   });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  //Fetch user and plans on component mount
   useEffect(() => {
     const fetchUserAndPlans = async () => {
       const res = await fetch('http://localhost:8080/api/auth/me', { credentials: 'include' });
@@ -30,12 +33,14 @@ const ManagePlans = () => {
     fetchUserAndPlans();
   }, []);
 
+  //Fetch all learning plans for user
   const fetchPlans = async (userId) => {
     const res = await fetch(`http://localhost:8080/api/plans/user/${userId}`);
     const data = await res.json();
     setPlans(data);
   };
 
+  //Create a new plan
   const handleCreatePlan = async (newPlanData) => {
     const res = await fetch('http://localhost:8080/api/plans', {
       method: 'POST',
@@ -47,6 +52,7 @@ const ManagePlans = () => {
     setShowForm(false);
   };
 
+  //Start editing an existing plan
   const handleEditPlan = (plan) => {
     const planId = plan._id || plan.id;
     setFormData({ ...plan, updatedPlanId: planId });
@@ -54,6 +60,7 @@ const ManagePlans = () => {
     setShowForm(true);
   };
 
+  //Submit updated plan
   const handleUpdatePlan = async (updated) => {
     const res = await fetch(`http://localhost:8080/api/plans/${updated.updatedPlanId}`, {
       method: 'PUT',
@@ -67,6 +74,7 @@ const ManagePlans = () => {
     }
   };
 
+  //Delete a selected plan
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     const res = await fetch(`http://localhost:8080/api/plans/${deleteTarget}`, {
@@ -89,6 +97,7 @@ const ManagePlans = () => {
           </div>
         </div>
 
+        {/* Plan Form  */}
         {showForm && (
           <LearningPlanForm
             formData={formData}
@@ -103,6 +112,7 @@ const ManagePlans = () => {
           />
         )}
 
+        {/* 📋 Active Tab Content */}
         {activeTab === 'plans' ? (
           <LearningPlansTab
             user={user}
@@ -118,6 +128,7 @@ const ManagePlans = () => {
         )}
       </div>
 
+      {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-96">

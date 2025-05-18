@@ -1,4 +1,7 @@
-import React from 'react';
+import { useEffect, useRef } from 'react';
+import { Formik, Form, Field, FieldArray, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import { toast } from 'react-toastify';
 
 const isValidUrl = (url) => {
   try {
@@ -9,68 +12,39 @@ const isValidUrl = (url) => {
   }
 };
 
-const LearningPlanForm = ({
-  formData,
-  setFormData,
-  isEditing,
-  onSubmit,
-  onCancel,
-}) => {
-  const updateTopic = (index, key, value) => {
-    const updatedTopics = [...formData.topics];
-    updatedTopics[index][key] = value;
-    setFormData({ ...formData, topics: updatedTopics });
-  };
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required('Plan title is required'),
+  courseDescription: Yup.string(),
+  description: Yup.string(),
+  topics: Yup.array()
+    .of(
+      Yup.object().shape({
+        title: Yup.string().required('Topic title is required'),
+        description: Yup.string(),
+        videoUrl: Yup.string()
+          .url('Must be a valid URL')
+          .nullable()
+          .notRequired()
+          .test('valid-url', 'Invalid URL', (val) => !val || isValidUrl(val)),
+        completed: Yup.boolean(),
+      })
+    )
+    .min(1, 'At least one topic is required'),
+});
 
-  const removeTopic = (indexToRemove) => {
-    const updatedTopics = formData.topics.filter((_, index) => index !== indexToRemove);
-    setFormData({ ...formData, topics: updatedTopics });
-  };
+const LearningPlanForm = ({ formData, setFormData, isEditing, onSubmit, onCancel }) => {
+  const convertToEmbedUrl = (url) =>
+    url.includes('watch?v=') ? url.replace('watch?v=', 'embed/') : url;
 
-  const addTopic = () => {
-    setFormData({
-      ...formData,
-      topics: [
-        ...formData.topics,
-        { title: '', description: '', completed: false, videoUrl: '' },
-      ],
-    });
-  };
+  const titleRef = useRef(null);
 
-  const convertToEmbedUrl = (url) => {
-    if (url.includes("watch?v=")) {
-      return url.replace("watch?v=", "embed/");
-    }
-    return url;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (formData.topics.length === 0) {
-      alert('Please add at least one topic.');
-      return;
-    }
-
-    for (const topic of formData.topics) {
-      if (topic.videoUrl && !isValidUrl(topic.videoUrl)) {
-        alert('Please enter a valid Video URL for all topics.');
-        return;
-      }
-    }
-
-    const formWithId = {
-      ...formData,
-      updatedPlanId: formData.updatedPlanId || '',
-    };
-
-    onSubmit(formWithId);
-  };
+  useEffect(() => {
+    setTimeout(() => titleRef.current?.focus(), 200);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div className="bg-white w-full max-w-2xl p-6 rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto border">
-        {/* Close Button */}
         <button
           onClick={onCancel}
           className="absolute top-3 right-4 text-2xl font-bold text-gray-500 hover:text-red-500"
@@ -81,109 +55,149 @@ const LearningPlanForm = ({
 
         <h3 className="text-2xl font-bold mb-6">{isEditing ? 'Update Plan' : 'Create Plan'}</h3>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            name="title"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Plan Title"
-            className="w-full border p-2 rounded-md"
-            required
-          />
+        <Formik
+          initialValues={formData}
+          validationSchema={validationSchema}
+          onSubmit={(values, { setSubmitting }) => {
+            try {
+              const updated = {
+                ...values,
+                topics: values.topics.map((t) => ({
+                  ...t,
+                  videoUrl: convertToEmbedUrl(t.videoUrl),
+                })),
+              };
+              onSubmit(updated);
+              toast.success('Plan created successfully!');
+            } catch (error) {
+              toast.error('Something went wrong.');
+              // Scroll to first error
+              const errorEl = document.querySelector('.text-red-500');
+              if (errorEl) {
+                errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({ values, setFieldValue, isSubmitting, isValid }) => (
+            <Form className="space-y-5">
+              <Field
+                name="title"
+                innerRef={titleRef}
+                placeholder="Plan Title"
+                className="w-full border p-2 rounded-md"
+              />
+              <ErrorMessage name="title" component="div" className="text-red-500 text-sm" />
 
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Short Description"
-            rows={2}
-            className="w-full border p-2 rounded-md"
-          />
+              <Field
+                as="textarea"
+                name="description"
+                placeholder="Short Description"
+                rows={2}
+                className="w-full border p-2 rounded-md"
+              />
 
-          <textarea
-            name="courseDescription"
-            value={formData.courseDescription}
-            onChange={(e) => setFormData({ ...formData, courseDescription: e.target.value })}
-            placeholder="Course Description"
-            rows={3}
-            className="w-full border p-2 rounded-md"
-          />
+              <Field
+                as="textarea"
+                name="courseDescription"
+                placeholder="Course Description"
+                rows={3}
+                className="w-full border p-2 rounded-md"
+              />
 
-          {/* Topics Section */}
-          <div>
-            <h4 className="font-semibold mb-2">Topics</h4>
-            {formData.topics.map((topic, index) => (
-              <div
-                key={index}
-                className="border border-gray-300 rounded-md p-3 mb-4 space-y-2"
-              >
-                <input
-                  type="text"
-                  name={`topicTitle-${index}`}
-                  placeholder="Topic Title"
-                  value={topic.title}
-                  onChange={(e) => updateTopic(index, 'title', e.target.value)}
-                  className="w-full border p-2 rounded-md"
-                  required
-                />
-                <textarea
-                  name={`topicDescription-${index}`}
-                  placeholder="Topic Description"
-                  value={topic.description}
-                  onChange={(e) => updateTopic(index, 'description', e.target.value)}
-                  className="w-full border p-2 rounded-md"
-                />
-                <input
-                  type="text"
-                  name={`topicVideo-${index}`}
-                  placeholder="Video URL"
-                  value={topic.videoUrl}
-                  onChange={(e) => updateTopic(index, 'videoUrl', convertToEmbedUrl(e.target.value))}
-                  className="w-full border p-2 rounded-md"
-                />
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name={`topicCompleted-${index}`}
-                    checked={topic.completed || false}
-                    onChange={(e) => updateTopic(index, 'completed', e.target.checked)}
-                  />
-                  <span className="text-sm">Completed</span>
-                </div>
+              <div>
+                <h4 className="font-semibold mb-2">Topics</h4>
+
+                <FieldArray name="topics">
+                  {({ remove, push }) => (
+                    <div>
+                      {values.topics.map((topic, index) => (
+                        <div key={index} className="border border-gray-300 rounded-md p-3 mb-4 space-y-2">
+                          <Field
+                            name={`topics[${index}].title`}
+                            placeholder="Topic Title"
+                            className="w-full border p-2 rounded-md"
+                          />
+                          <ErrorMessage name={`topics[${index}].title`} component="div" className="text-red-500 text-sm" />
+
+                          <Field
+                            as="textarea"
+                            name={`topics[${index}].description`}
+                            placeholder="Topic Description"
+                            className="w-full border p-2 rounded-md"
+                          />
+
+                          <Field
+                            name={`topics[${index}].videoUrl`}
+                            placeholder="Video URL"
+                            className="w-full border p-2 rounded-md"
+                            onBlur={(e) =>
+                              setFieldValue(`topics[${index}].videoUrl`, convertToEmbedUrl(e.target.value))
+                            }
+                          />
+                          <ErrorMessage name={`topics[${index}].videoUrl`} component="div" className="text-red-500 text-sm" />
+
+                          {/* Video Preview */}
+                          {isValidUrl(topic.videoUrl) && (
+                            <iframe
+                              src={convertToEmbedUrl(topic.videoUrl)}
+                              title={`Preview-${index}`}
+                              className="w-full h-40 rounded-md mt-2"
+                              allowFullScreen
+                            />
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <Field type="checkbox" name={`topics[${index}].completed`} />
+                            <span className="text-sm">Completed</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="text-sm text-red-600 hover:underline"
+                          >
+                            Remove Topic
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          push({ title: '', description: '', completed: false, videoUrl: '' })
+                        }
+                        className="text-sm text-purple-600 hover:underline"
+                      >
+                        + Add Topic
+                      </button>
+                    </div>
+                  )}
+                </FieldArray>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !isValid}
+                  className={`bg-purple-600 text-white px-4 py-2 rounded-md ${isSubmitting || !isValid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'
+                    }`}
+                >
+                  {isSubmitting ? 'Submitting...' : isEditing ? 'Update Plan' : 'Create Plan'}
+                </button>
                 <button
                   type="button"
-                  onClick={() => removeTopic(index)}
-                  className="text-sm text-red-600 hover:underline"
+                  onClick={onCancel}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
                 >
-                  Remove Topic
+                  Cancel
                 </button>
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addTopic}
-              className="text-sm text-purple-600 hover:underline"
-            >
-              + Add Topic
-            </button>
-          </div>
-
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="submit"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
-            >
-              {isEditing ? 'Update Plan' : 'Create Plan'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

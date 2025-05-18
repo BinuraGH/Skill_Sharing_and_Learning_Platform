@@ -15,6 +15,7 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
   const [showAll, setShowAll] = useState(false);
   const visibleNotifications = showAll ? notifications : notifications.slice(0, 5);
 
+  // Clear a Single Notification
   const clearNotification = async (id) => {
     await fetch(`http://localhost:8080/api/notifications/${id}`, {
       method: 'DELETE',
@@ -22,6 +23,7 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
     fetchNotifications();
   };
 
+  //Clear All Notifications for the User
   const clearAll = async () => {
     if (!notifications[0]) return;
     const userId = notifications[0].userId;
@@ -31,6 +33,7 @@ const NotificationDropdown = ({ notifications, timeAgo, fetchNotifications }) =>
     fetchNotifications();
   };
 
+  // Get Icon and Background Color based on Notification Type
   const getIcon = (n) => {
     if (n.type === 'follow') return <FiUserPlus className="text-lg" />;
     if (n.type === 'comment') return <FiMessageSquare className="text-lg" />;

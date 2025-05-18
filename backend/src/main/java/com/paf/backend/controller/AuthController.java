@@ -35,8 +35,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        return authService.loginUser(loginDto);
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDto, HttpServletRequest request) {
+        return authService.loginUser(loginDto, request);
     }
 
     @GetMapping("/me")

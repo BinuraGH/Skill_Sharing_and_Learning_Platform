@@ -5,33 +5,39 @@ import { FiSearch, FiHome, FiBookOpen, FiBell, FiClipboard } from 'react-icons/f
 import NotificationDropdown from '../Components/NotificationDropdown';
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const dropdownRef = useRef(null);
+  const [user, setUser] = useState(null);// Logged-in user object
+  const [dropdownOpen, setDropdownOpen] = useState(false);// Toggle for profile dropdown
+  const [showNotifications, setShowNotifications] = useState(false); // Toggle for notifications dropdown
+  const [notifications, setNotifications] = useState([]);  // List of fetched notifications
+  const [searchQuery, setSearchQuery] = useState(''); // User's search input
+  const [searchResults, setSearchResults] = useState([]);// Matched users from search
+  const dropdownRef = useRef(null); // Ref to detect outside clicks
+
   const navigate = useNavigate();
 
   // Fetch logged-in user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get('http://localhost:8080/api/auth/me', {
-          withCredentials: true,
-        });
-        setUser(res.data);
-        console.log("Logged in user:", res.data);
-      } catch (err) {
-        console.error('Error fetching user:', err);
+ useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/auth/me', {
+        withCredentials: true,
+      });
+      setUser(res.data);
+      console.log("Logged in user:", res.data);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        console.warn("User not authenticated");
+        // Optionally redirect to login page
+        // navigate('/login');
+      } else {
+        console.error("Failed to fetch user:", err);
       }
-    };
+    }
+  };
 
-    fetchUser();
-  }, []);
-
-  // Handle outside click
+  fetchUser(); // ✅ Correct
+}, []);
+  // Close dropdowns if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -43,7 +49,7 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Poll notifications
+  // Periodically fetch notifications if dropdown is closed
   useEffect(() => {
     const interval = setInterval(() => {
       if (!showNotifications) {
@@ -58,6 +64,7 @@ const Navbar = () => {
   }, [user, showNotifications]);
 
 
+  //Handle search input and fetch user matches
   const handleSearchChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -75,7 +82,7 @@ const Navbar = () => {
   };
 
 
-  // Bell click handler
+  // Handle clicking the bell icon (show dropdown + mark unread as read)
   const handleBellClick = async () => {
     const isOpening = !showNotifications;
     setShowNotifications(isOpening);
@@ -91,7 +98,7 @@ const Navbar = () => {
             )
           );
 
-          // ✅ Update locally without overwriting all
+          //Update locally without overwriting all
           setNotifications(prev =>
             prev.map(n =>
               unreadIds.includes(n.id) ? { ...n, isRead: true } : n
@@ -104,6 +111,7 @@ const Navbar = () => {
     }
   };
 
+  //Convert timestamps to readable "time ago" format
   const timeAgo = (date) => {
     const now = new Date();
     const createdDate = new Date(date);
@@ -126,18 +134,22 @@ const Navbar = () => {
     const years = Math.floor(months / 12);
     return `${years} year${years === 1 ? '' : 's'} ago`;
   };
+
+  //Handle user logout
   const handleLogout = async () => {
     try {
       await axios.post('http://localhost:8080/api/auth/logout', {}, {
         withCredentials: true,
       });
-      navigate('/');
+      // navigate('/');
+      window.location.href = '/';
     } catch (err) {
       console.error('Error logging out:', err);
     }
   };
 
 
+  //Set user profile picture or default
   const imageSrc =
     user?.profilePicture && user.profilePicture.trim() !== ''
       ? user.profilePicture
@@ -151,7 +163,7 @@ const Navbar = () => {
         <span className="text-xl font-semibold text-purple-600">CodeShare</span>
       </div>
 
-      {/* Search Bar */}
+      {/* Search Input  */}
       <div className="relative w-1/3">
         <input
           type="text"
@@ -162,7 +174,7 @@ const Navbar = () => {
         />
         <FiSearch className="absolute left-3 top-2.5 text-gray-500 text-lg" />
 
-        {/* 🔍 Search Dropdown Results */}
+        {/* Search Dropdown Results */}
         {searchResults.length > 0 && (
           <div className="absolute top-full mt-1 left-0 right-0 bg-white border rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
             {searchResults.map((result, idx) => (
@@ -183,7 +195,7 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Icons & Profile */}
+      {/*  Right Side: Icons & Profile */}
       <div className="flex items-center gap-5" ref={dropdownRef}>
         {/* Home Icon */}
         <div
@@ -194,7 +206,7 @@ const Navbar = () => {
           <FiHome className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
         </div>
 
-        {/* Bell Icon */}
+        {/* Notification Bell */}
         <div
           className="relative group p-2 rounded-md cursor-pointer transition duration-200 hover:bg-purple-100 hover:shadow-md"
           onClick={handleBellClick}
@@ -202,13 +214,14 @@ const Navbar = () => {
           <div className="absolute inset-0 border-2 border-purple-500 opacity-0 group-hover:opacity-100 rounded-md scale-95 group-hover:scale-100 transition-all duration-200 pointer-events-none"></div>
           <FiBell className="text-xl text-gray-600 group-hover:text-purple-600 relative z-10 transition duration-200" />
 
-          {/* 🔴 Red Badge for new comments only */}
+          {/* Red Badge for Unread badge count  */}
           {notifications.filter(n => !n.isRead).length > 0 && (
             <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-1 rounded-full leading-tight">
               {notifications.filter(n => !n.isRead).length}
             </span>
           )}
 
+          {/* Notification Dropdown */}
           {showNotifications && (
             <NotificationDropdown
               notifications={notifications}
@@ -223,7 +236,7 @@ const Navbar = () => {
 
         </div>
 
-        {/* Message Icon */}
+        {/*  Plans Icon */}
         <div
           onClick={() => navigate('/plans')}
           className="relative group p-2 rounded-md cursor-pointer transition duration-200 hover:bg-purple-100 hover:shadow-md"
@@ -233,7 +246,7 @@ const Navbar = () => {
         </div>
 
 
-        {/* Profile Image */}
+        {/* Profile Image & Dropdown */}
         <div className="relative">
           <img
             src={imageSrc}
@@ -242,6 +255,7 @@ const Navbar = () => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             referrerPolicy="no-referrer"
           />
+          {/* Profile Menu Dropdown */}
           {dropdownOpen && (
             <div className="absolute right-0 top-12 w-56 bg-white border rounded-md shadow-md z-50 animate-fade-slide">
               <div className="p-4 border-b text-sm">
