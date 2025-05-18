@@ -9,7 +9,6 @@ const HomeRightSection = () => {
   const [hoveredUserId, setHoveredUserId] = useState(null);
   const [fadingOutUserId, setFadingOutUserId] = useState(null);
 
-
   // 1️⃣ Fetch current logged-in user
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -47,7 +46,7 @@ const HomeRightSection = () => {
       try {
         const res = await fetch(`http://localhost:8080/api/follow/${currentUser.id}/following`);
         const data = await res.json();
-        const followedIds = data.map(f => f.followedId);
+        const followedIds = data.map(f => String(f.followedId));
         setFollowing(followedIds);
       } catch (err) {
         console.error("Error fetching following list:", err);
@@ -86,7 +85,7 @@ const HomeRightSection = () => {
   };
 
 
-  if (!currentUser || following.length === 0 && users.length > 0) {
+  if (!currentUser || users.length === 0) {
     return (
       <div className="right-section bg-white rounded-xl p-4 shadow-md">
         <h4 className="text-lg font-semibold mb-4">Suggested for you</h4>
@@ -95,12 +94,17 @@ const HomeRightSection = () => {
     );
   }
 
+
   return (
     <div className="right-section bg-white rounded-xl p-4 shadow-md">
       <h4 className="text-lg font-semibold mb-4">Suggested for you</h4>
       <ul className="suggested-list space-y-4">
         {users
-          .filter(user => user.id !== currentUser?.id && !following.includes(user.id))
+          .filter(user =>
+            String(user.id) !== String(currentUser?.id) &&
+            !following.includes(String(user.id))
+          )
+
           .map((user, index) => {
             const isFollowing = following.includes(user.id);
             const isHovered = hoveredUserId === user.id;
